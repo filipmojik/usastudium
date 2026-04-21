@@ -226,6 +226,12 @@
             <span class="card-header-action" id="addSlotBtn">+ Přidat termín</span>
           </div>
           <div class="card-body">
+            <div id="addSlotUI" style="display:none; background:#f4f5f7; padding:15px; border-radius:8px; margin-bottom:15px; gap:10px; flex-wrap:wrap; align-items:center;">
+              <input type="date" id="newSlotDate" style="padding:8px; border:1px solid var(--border); border-radius:4px;">
+              <input type="time" id="newSlotTime" style="padding:8px; border:1px solid var(--border); border-radius:4px;">
+              <button class="btn-primary" id="saveNewSlotBtn" style="padding:8px 15px;">Přidat</button>
+              <button class="filter-btn" id="cancelNewSlotBtn">Zrušit</button>
+            </div>
             <div id="timeSlotsContainer">
               <!-- Filled by JS -->
             </div>

@@ -107,8 +107,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   
-  // Initial generation
-  generateDates('cz');
+  let availableSlotsFront = {};
+
+  const timeSelect = document.getElementById('appointmentTime');
+  const dateSelect = document.getElementById('appointmentDate');
+
+  function updateTimeOptions() {
+    if (!dateSelect || !timeSelect) return;
+    const selectedDateStr = dateSelect.value;
+    if (!selectedDateStr) return;
+    
+    const slots = availableSlotsFront[selectedDateStr] || [];
+    
+    // Uchování placeholderu
+    const firstOption = timeSelect.querySelector('option[disabled]');
+    timeSelect.innerHTML = '';
+    if (firstOption) timeSelect.appendChild(firstOption);
+    
+    slots.forEach(time => {
+      const option = document.createElement('option');
+      option.value = time;
+      option.textContent = time;
+      timeSelect.appendChild(option);
+    });
+  }
+
+  function renderFrontendDates(lang) {
+    if (!dateSelect) return;
+    const firstOption = dateSelect.querySelector('option[disabled]');
+    dateSelect.innerHTML = '';
+    if (firstOption) dateSelect.appendChild(firstOption);
+
+    const sortedDates = Object.keys(availableSlotsFront).sort();
+    
+    const dayNamesCZ = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+    const monthNamesCZ = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
+    const dayNamesEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const monthNamesEN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    sortedDates.forEach(dateStr => {
+      if (availableSlotsFront[dateStr].length === 0) return; // Nedávat tam dny bez hodin
+
+      const dateObj = new Date(dateStr);
+      const dayName = lang === 'cz' ? dayNamesCZ[dateObj.getDay()] : dayNamesEN[dateObj.getDay()];
+      const day = dateObj.getDate();
+      const month = lang === 'cz' ? monthNamesCZ[dateObj.getMonth()] : monthNamesEN[dateObj.getMonth()];
+
+      const option = document.createElement('option');
+      option.value = dateStr;
+      
+      if (lang === 'cz') {
+        option.textContent = `${dayName} ${day}. ${month}`;
+      } else {
+        option.textContent = `${dayName}, ${month} ${day}`;
+      }
+      
+      dateSelect.appendChild(option);
+    });
+  }
+
+  if (dateSelect) {
+    dateSelect.addEventListener('change', updateTimeOptions);
+  }
+
+  async function fetchSettingsFront() {
+    if (!db) return;
+    const { data: set, error: setErr } = await db.from('settings').select('available_slots').eq('id', 1).single();
+    if (set && set.available_slots) {
+      availableSlotsFront = set.available_slots;
+    }
+  }
+
+  fetchSettingsFront().then(() => {
+    renderFrontendDates('cz'); // Build dates from dictionary
+  });
 
   // === Form handling ===
   const contactForm = document.getElementById('contactForm');
@@ -131,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
       try {
-        if (!supabase) {
+        if (!db) {
           throw new Error('Supabase is not initialized. Please check your keys.');
         }
 
