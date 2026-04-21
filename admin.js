@@ -3,7 +3,7 @@
 // ===== SUPABASE CONFIG =====
 const SUPABASE_URL = 'https://zkhinefqbebozbtxlzgf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraGluZWZxYmVib3pidHhsemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Nzg5OTIsImV4cCI6MjA5MjM1NDk5Mn0.E9xrvHCxdPpT_wCF_Tlwu2lbYiqwNMgje2Ux201slY8';
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let mockClients = [];
 
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
       loginError.style.display = 'none';
 
       try {
-        var result = await supabase.auth.signInWithPassword({ email: email, password: password });
+        var result = await db.auth.signInWithPassword({ email: email, password: password });
         if (result.error) {
           console.error('Login error:', result.error.message);
           loginError.style.display = 'block';
@@ -53,15 +53,15 @@ document.addEventListener('DOMContentLoaded', function() {
   // Odhlášení
   if (logoutBtn) {
     logoutBtn.onclick = async function() {
-      await supabase.auth.signOut();
+      await db.auth.signOut();
     };
   }
 
   // Kontrola stavu přihlášení
   async function checkAuth() {
-    if (!supabase) return;
+    if (!db) return;
     try {
-      var sess = await supabase.auth.getSession();
+      var sess = await db.auth.getSession();
       if (sess.data.session) {
         loginOverlay.classList.remove('active');
         fetchLeads();
@@ -75,8 +75,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Listener na změnu auth stavu
-  if (supabase) {
-    supabase.auth.onAuthStateChange(function(event, session) {
+  if (db) {
+    db.auth.onAuthStateChange(function(event, session) {
       if (session) {
         loginOverlay.classList.remove('active');
         fetchLeads();
@@ -92,8 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== FETCH DATA =====
 async function fetchLeads() {
-  if (!supabase) return;
-  const { data, error } = await supabase
+  if (!db) return;
+  const { data, error } = await db
     .from('leads')
     .select('*')
     .order('created_at', { ascending: false });
@@ -477,8 +477,8 @@ document.getElementById('panelStatus').addEventListener('change', async function
     client.status = this.value;
     
     // Save to Supabase
-    if (supabase) {
-      const { error } = await supabase
+    if (db) {
+      const { error } = await db
         .from('leads')
         .update({ status: client.status })
         .eq('id', client.id);
@@ -527,8 +527,8 @@ document.getElementById('addNoteBtn').addEventListener('click', async () => {
   const updatedNotes = [...(client.notes || []), newNote];
   
   // Save to Supabase
-  if (supabase) {
-    const { error } = await supabase
+  if (db) {
+    const { error } = await db
       .from('leads')
       .update({ notes: updatedNotes })
       .eq('id', client.id);
@@ -590,8 +590,8 @@ document.getElementById('saveMeetingBtn').addEventListener('click', async () => 
   const client = getClient(currentClientId);
   
   // Save to Supabase
-  if (supabase) {
-    const { error } = await supabase
+  if (db) {
+    const { error } = await db
       .from('leads')
       .update({
         appointment_date: date,

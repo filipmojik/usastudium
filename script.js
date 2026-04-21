@@ -3,7 +3,7 @@
 // ===== SUPABASE CONFIG =====
 const SUPABASE_URL = 'https://zkhinefqbebozbtxlzgf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraGluZWZxYmVib3pidHhsemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Nzg5OTIsImV4cCI6MjA5MjM1NDk5Mn0.E9xrvHCxdPpT_wCF_Tlwu2lbYiqwNMgje2Ux201slY8';
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 document.addEventListener('DOMContentLoaded', () => {
   // === Navigation scroll effect ===
   const nav = document.getElementById('navbar');
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Combine date and time for nextMeeting if needed, but in the mock we have them separate. 
         // For now let's insert into a simplified structure or the one matching mockClients.
-        const { error } = await supabase
+        const { error } = await db
           .from('leads')
           .insert([
             {
