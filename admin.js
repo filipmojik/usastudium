@@ -1,0 +1,564 @@
+// ===== ADMIN CRM – JavaScript =====
+
+// ===== MOCK DATA =====
+const mockClients = [
+  {
+    id: 1,
+    firstName: 'Tomáš',
+    lastName: 'Novák',
+    email: 'tomas.novak@email.cz',
+    phone: '+420 777 123 456',
+    goal: 'Bakalářské studium v Kalifornii, obor Computer Science. Hledá stipendium.',
+    status: 'new',
+    date: '2025-04-18',
+    nextMeeting: null,
+    notes: [],
+    materials: [
+      { name: 'Checklist přihlášky', date: '2025-04-18' }
+    ]
+  },
+  {
+    id: 2,
+    firstName: 'Anna',
+    lastName: 'Svobodová',
+    email: 'anna.svobodova@gmail.com',
+    phone: '+420 608 987 654',
+    goal: 'Střední škola v New Hampshire, boarding school. Rodiče chtějí konzultaci.',
+    status: 'contacted',
+    date: '2025-04-15',
+    nextMeeting: { date: '2025-04-25', time: '16:00' },
+    notes: [
+      { text: 'Volali jsme – rodiče mají zájem o boarding schools, rozpočet cca 30k USD/rok.', date: '2025-04-16' }
+    ],
+    materials: [
+      { name: 'Seznam boarding schools', date: '2025-04-16' },
+      { name: 'Přehled stipendií', date: '2025-04-16' }
+    ]
+  },
+  {
+    id: 3,
+    firstName: 'Martin',
+    lastName: 'Krejčí',
+    email: 'martin.krejci@seznam.cz',
+    phone: '+420 732 456 789',
+    goal: 'Magisterské studium, MBA v Texasu. Chce plné stipendium.',
+    status: 'scheduled',
+    date: '2025-04-10',
+    nextMeeting: { date: '2025-04-22', time: '15:00' },
+    notes: [
+      { text: 'První schůzka proběhla, Martin má skvělé GPA (3.8). Doporučuji Texas A&M a UT Austin.', date: '2025-04-12' },
+      { text: 'Poslal jsem mu seznam programů a deadlines. Čekám na odpověď ohledně GMAT skóre.', date: '2025-04-14' }
+    ],
+    materials: [
+      { name: 'MBA programy v Texasu', date: '2025-04-12' },
+      { name: 'GMAT příprava', date: '2025-04-14' },
+      { name: 'Motivační dopis – draft', date: '2025-04-14' }
+    ]
+  },
+  {
+    id: 4,
+    firstName: 'Eliška',
+    lastName: 'Dvořáková',
+    email: 'eliska.dvorakova@email.cz',
+    phone: '+420 605 321 987',
+    goal: 'Studium biologie na univerzitě v Severní Karolíně. Potřebuje pomoc s TOEFL.',
+    status: 'closed',
+    date: '2025-03-28',
+    nextMeeting: null,
+    notes: [
+      { text: 'Eliška podala přihlášku na UNC Asheville i Appalachian State. TOEFL 95 bodů.', date: '2025-04-01' },
+      { text: 'Přijata na UNC Asheville s částečným stipendiem! 🎉', date: '2025-04-15' }
+    ],
+    materials: [
+      { name: 'Přihláška UNC Asheville', date: '2025-03-30' },
+      { name: 'TOEFL výsledky', date: '2025-04-01' },
+      { name: 'Acceptance letter', date: '2025-04-15' }
+    ]
+  },
+  {
+    id: 5,
+    firstName: 'Jakub',
+    lastName: 'Procházka',
+    email: 'jakub.prochazka@outlook.com',
+    phone: '+420 773 654 321',
+    goal: 'Community college v Arizoně, pak přestup na Arizona State. Rozpočet omezený.',
+    status: 'new',
+    date: '2025-04-19',
+    nextMeeting: null,
+    notes: [],
+    materials: []
+  }
+];
+
+// Available time slots
+let availableSlots = {
+  'Pondělí': ['15:00', '16:00', '17:00'],
+  'Úterý': ['15:00', '16:00'],
+  'Středa': ['15:00', '16:00', '17:00', '18:00'],
+  'Čtvrtek': ['16:00', '17:00'],
+  'Pátek': ['15:00', '16:00'],
+  'Sobota': [],
+  'Neděle': []
+};
+
+// ===== STATE =====
+let currentView = 'dashboard';
+let currentClientId = null;
+let currentFilter = 'all';
+
+// ===== DOM REFS =====
+const views = document.querySelectorAll('.view');
+const sidebarLinks = document.querySelectorAll('.sidebar-link');
+const clientPanel = document.getElementById('clientPanel');
+const clientOverlay = document.getElementById('clientOverlay');
+const pageTitle = document.getElementById('pageTitle');
+const pageSubtitle = document.getElementById('pageSubtitle');
+
+// ===== NAVIGATION =====
+function switchView(viewName) {
+  currentView = viewName;
+
+  views.forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${viewName}`).classList.add('active');
+
+  sidebarLinks.forEach(link => {
+    link.classList.toggle('active', link.dataset.view === viewName);
+  });
+
+  const titles = {
+    dashboard: ['Přehled', 'Vítej zpět, Veroniko 👋'],
+    leads: ['Poptávky', 'Správa příchozích kontaktů'],
+    calendar: ['Kalendář', 'Správa dostupných termínů'],
+    clients: ['Klienti', 'Všichni tvoji klienti']
+  };
+
+  pageTitle.textContent = titles[viewName][0];
+  pageSubtitle.textContent = titles[viewName][1];
+
+  // Render view-specific content
+  if (viewName === 'leads') renderLeadsTable();
+  if (viewName === 'clients') renderClientsTable();
+  if (viewName === 'calendar') renderTimeSlots();
+  if (viewName === 'dashboard') renderDashboard();
+}
+
+// Sidebar click handlers
+sidebarLinks.forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchView(link.dataset.view);
+  });
+});
+
+// "Zobrazit vše" links
+document.querySelectorAll('.card-header-action[data-view]').forEach(el => {
+  el.addEventListener('click', () => switchView(el.dataset.view));
+});
+
+// ===== HELPERS =====
+function getInitials(first, last) {
+  return (first[0] + last[0]).toUpperCase();
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatDateShort(dateStr) {
+  if (!dateStr) return { day: '-', month: '-' };
+  const d = new Date(dateStr);
+  return {
+    day: d.getDate(),
+    month: d.toLocaleDateString('cs-CZ', { month: 'short' }).replace('.', '')
+  };
+}
+
+function getStatusLabel(status) {
+  const labels = { new: 'Nový', contacted: 'Nakontaktováno', scheduled: 'Schůzka', closed: 'Uzavřeno' };
+  return labels[status] || status;
+}
+
+function getAvatarColor(index) {
+  const colors = ['', 'green', 'blue', 'yellow', ''];
+  return colors[index % colors.length];
+}
+
+function getClient(id) {
+  return mockClients.find(c => c.id === id);
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  // Stats
+  const newLeads = mockClients.filter(c => c.status === 'new').length;
+  const closed = mockClients.filter(c => c.status === 'closed').length;
+  const scheduled = mockClients.filter(c => c.nextMeeting).length;
+  const total = mockClients.length;
+  const convRate = total > 0 ? Math.round((closed / total) * 100) : 0;
+
+  document.getElementById('statLeads').textContent = newLeads;
+  document.getElementById('statClosed').textContent = closed;
+  document.getElementById('statMeetings').textContent = scheduled;
+  document.getElementById('statConversion').textContent = convRate + '%';
+  document.getElementById('leadsBadge').textContent = newLeads;
+
+  // Recent leads table (last 4)
+  const tbody = document.getElementById('dashboardTableBody');
+  tbody.innerHTML = '';
+  const recent = [...mockClients].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
+
+  recent.forEach((client, i) => {
+    const tr = document.createElement('tr');
+    tr.onclick = () => openClientPanel(client.id);
+    tr.innerHTML = `
+      <td>
+        <div class="client-cell">
+          <div class="client-avatar ${getAvatarColor(i)}">${getInitials(client.firstName, client.lastName)}</div>
+          <div>
+            <div class="client-name">${client.firstName} ${client.lastName}</div>
+            <div class="client-email">${client.email}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="status-badge ${client.status}">${getStatusLabel(client.status)}</span></td>
+      <td>${formatDate(client.date)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Upcoming meetings
+  const meetingsEl = document.getElementById('upcomingMeetings');
+  const withMeetings = mockClients.filter(c => c.nextMeeting).sort((a, b) => new Date(a.nextMeeting.date) - new Date(b.nextMeeting.date));
+
+  if (withMeetings.length === 0) {
+    meetingsEl.innerHTML = '<div class="empty-state"><p>Žádné schůzky naplánované</p></div>';
+  } else {
+    meetingsEl.innerHTML = withMeetings.map(client => {
+      const d = formatDateShort(client.nextMeeting.date);
+      return `
+        <div class="meeting-item" onclick="openClientPanel(${client.id})">
+          <div class="meeting-date-box">
+            <span class="day">${d.day}</span>
+            <span class="month">${d.month}</span>
+          </div>
+          <div class="meeting-info">
+            <h4>${client.firstName} ${client.lastName}</h4>
+            <p>Konzultace</p>
+          </div>
+          <span class="meeting-time">${client.nextMeeting.time}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Activity feed
+  const feedEl = document.getElementById('activityFeed');
+  const activities = [
+    { color: 'blue', text: '<strong>Jakub Procházka</strong> poslal novou poptávku', time: 'Před 2 hodinami' },
+    { color: 'green', text: '<strong>Eliška Dvořáková</strong> přijata na UNC Asheville 🎉', time: 'Před 5 dny' },
+    { color: 'yellow', text: 'Schůzka s <strong>Martinem Krejčím</strong> naplánována', time: 'Před týdnem' },
+    { color: 'purple', text: '<strong>Anna Svobodová</strong> nakontaktována', time: 'Před 5 dny' },
+    { color: 'blue', text: '<strong>Tomáš Novák</strong> poslal novou poptávku', time: 'Před 2 dny' }
+  ];
+
+  feedEl.innerHTML = activities.map(a => `
+    <div class="activity-item">
+      <div class="activity-dot ${a.color}"></div>
+      <div>
+        <div class="activity-text">${a.text}</div>
+        <div class="activity-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== LEADS TABLE =====
+function renderLeadsTable() {
+  const tbody = document.getElementById('leadsTableBody');
+  tbody.innerHTML = '';
+
+  let filtered = [...mockClients];
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(c => c.status === currentFilter);
+  }
+
+  filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  filtered.forEach((client, i) => {
+    const tr = document.createElement('tr');
+    tr.onclick = () => openClientPanel(client.id);
+    tr.innerHTML = `
+      <td>
+        <div class="client-cell">
+          <div class="client-avatar ${getAvatarColor(i)}">${getInitials(client.firstName, client.lastName)}</div>
+          <div class="client-name">${client.firstName} ${client.lastName}</div>
+        </div>
+      </td>
+      <td>${client.email}</td>
+      <td>${client.phone}</td>
+      <td><span class="status-badge ${client.status}">${getStatusLabel(client.status)}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${client.goal}</td>
+      <td>${formatDate(client.date)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderLeadsTable();
+  });
+});
+
+// ===== CLIENTS TABLE =====
+function renderClientsTable() {
+  const tbody = document.getElementById('clientsTableBody');
+  tbody.innerHTML = '';
+
+  mockClients.forEach((client, i) => {
+    const meetingStr = client.nextMeeting
+      ? `${formatDate(client.nextMeeting.date)} ${client.nextMeeting.time}`
+      : '—';
+    const tr = document.createElement('tr');
+    tr.onclick = () => openClientPanel(client.id);
+    tr.innerHTML = `
+      <td>
+        <div class="client-cell">
+          <div class="client-avatar ${getAvatarColor(i)}">${getInitials(client.firstName, client.lastName)}</div>
+          <div>
+            <div class="client-name">${client.firstName} ${client.lastName}</div>
+            <div class="client-email">${client.email}</div>
+          </div>
+        </div>
+      </td>
+      <td>${client.email}</td>
+      <td><span class="status-badge ${client.status}">${getStatusLabel(client.status)}</span></td>
+      <td>${meetingStr}</td>
+      <td>${client.notes.length}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ===== TIME SLOTS =====
+function renderTimeSlots() {
+  const container = document.getElementById('timeSlotsContainer');
+  container.innerHTML = '';
+
+  Object.entries(availableSlots).forEach(([day, times]) => {
+    const row = document.createElement('div');
+    row.className = 'time-slot-row';
+    row.innerHTML = `
+      <div class="time-slot-day">${day}</div>
+      <div class="time-slot-times">
+        ${times.map(t => `<span class="time-chip" onclick="removeTimeSlot('${day}', '${t}')">${t}</span>`).join('')}
+        <span class="time-chip add" onclick="addTimeSlot('${day}')">+ přidat</span>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+window.removeTimeSlot = function(day, time) {
+  availableSlots[day] = availableSlots[day].filter(t => t !== time);
+  renderTimeSlots();
+};
+
+window.addTimeSlot = function(day) {
+  const time = prompt(`Přidej čas pro ${day} (např. 14:00):`);
+  if (time && /^\d{1,2}:\d{2}$/.test(time)) {
+    if (!availableSlots[day].includes(time)) {
+      availableSlots[day].push(time);
+      availableSlots[day].sort();
+      renderTimeSlots();
+    }
+  }
+};
+
+// ===== CLIENT PANEL =====
+function openClientPanel(clientId) {
+  currentClientId = clientId;
+  const client = getClient(clientId);
+  if (!client) return;
+
+  // Fill profile
+  document.getElementById('panelAvatar').textContent = getInitials(client.firstName, client.lastName);
+  document.getElementById('panelName').textContent = `${client.firstName} ${client.lastName}`;
+  document.getElementById('panelEmail').textContent = client.email;
+  document.getElementById('panelPhone').textContent = client.phone;
+  document.getElementById('panelDate').textContent = formatDate(client.date);
+  document.getElementById('panelGoal').textContent = client.goal;
+  document.getElementById('panelStatus').value = client.status;
+
+  // Next meeting
+  if (client.nextMeeting) {
+    const d = formatDateShort(client.nextMeeting.date);
+    document.getElementById('panelMeetDay').textContent = d.day;
+    document.getElementById('panelMeetMonth').textContent = d.month;
+    document.getElementById('panelMeetTitle').textContent = 'Konzultace';
+    document.getElementById('panelMeetTime').textContent = `${formatDate(client.nextMeeting.date)} v ${client.nextMeeting.time}`;
+  } else {
+    document.getElementById('panelMeetDay').textContent = '-';
+    document.getElementById('panelMeetMonth').textContent = '-';
+    document.getElementById('panelMeetTitle').textContent = 'Žádná naplánovaná';
+    document.getElementById('panelMeetTime').textContent = 'Klikni na Upravit pro přidání';
+  }
+
+  // Hide edit grid
+  document.getElementById('meetingEditGrid').classList.remove('active');
+
+  // Notes
+  renderNotes(client);
+
+  // Materials
+  renderMaterials(client);
+
+  // Show panel
+  clientPanel.classList.add('active');
+  clientOverlay.classList.add('active');
+}
+
+function closeClientPanel() {
+  clientPanel.classList.remove('active');
+  clientOverlay.classList.remove('active');
+  currentClientId = null;
+}
+
+document.getElementById('clientPanelClose').addEventListener('click', closeClientPanel);
+document.getElementById('clientOverlay').addEventListener('click', closeClientPanel);
+
+// Status change
+document.getElementById('panelStatus').addEventListener('change', function() {
+  const client = getClient(currentClientId);
+  if (client) {
+    client.status = this.value;
+    // Re-render active views
+    if (currentView === 'dashboard') renderDashboard();
+    if (currentView === 'leads') renderLeadsTable();
+    if (currentView === 'clients') renderClientsTable();
+  }
+});
+
+// ===== NOTES =====
+function renderNotes(client) {
+  const notesList = document.getElementById('notesList');
+  if (client.notes.length === 0) {
+    notesList.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">Zatím žádné poznámky</p>';
+  } else {
+    notesList.innerHTML = client.notes.map(note => `
+      <div class="note-item">
+        <div class="note-date">${formatDate(note.date)}</div>
+        <div class="note-text">${note.text}</div>
+      </div>
+    `).join('');
+  }
+}
+
+document.getElementById('addNoteBtn').addEventListener('click', () => {
+  const input = document.getElementById('noteInput');
+  const text = input.value.trim();
+  if (!text || !currentClientId) return;
+
+  const client = getClient(currentClientId);
+  client.notes.push({
+    text: text,
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  input.value = '';
+  renderNotes(client);
+  if (currentView === 'clients') renderClientsTable();
+});
+
+// Enter key for notes
+document.getElementById('noteInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('addNoteBtn').click();
+  }
+});
+
+// ===== MATERIALS =====
+function renderMaterials(client) {
+  const list = document.getElementById('materialsList');
+  if (client.materials.length === 0) {
+    list.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">Žádné materiály</p>';
+  } else {
+    list.innerHTML = client.materials.map(m => `
+      <div class="material-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span>${m.name}</span>
+        <span class="material-date">${formatDate(m.date)}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// ===== MEETING EDIT =====
+document.getElementById('editMeetingBtn').addEventListener('click', () => {
+  const grid = document.getElementById('meetingEditGrid');
+  grid.classList.toggle('active');
+
+  const client = getClient(currentClientId);
+  if (client && client.nextMeeting) {
+    document.getElementById('meetingDateInput').value = client.nextMeeting.date;
+    document.getElementById('meetingTimeInput').value = client.nextMeeting.time;
+  }
+});
+
+document.getElementById('saveMeetingBtn').addEventListener('click', () => {
+  const date = document.getElementById('meetingDateInput').value;
+  const time = document.getElementById('meetingTimeInput').value;
+
+  if (!date || !time || !currentClientId) return;
+
+  const client = getClient(currentClientId);
+  client.nextMeeting = { date, time };
+
+  // Update panel
+  const d = formatDateShort(date);
+  document.getElementById('panelMeetDay').textContent = d.day;
+  document.getElementById('panelMeetMonth').textContent = d.month;
+  document.getElementById('panelMeetTitle').textContent = 'Konzultace';
+  document.getElementById('panelMeetTime').textContent = `${formatDate(date)} v ${time}`;
+  document.getElementById('meetingEditGrid').classList.remove('active');
+
+  // Re-render
+  if (currentView === 'dashboard') renderDashboard();
+  if (currentView === 'clients') renderClientsTable();
+});
+
+// ===== SEARCH =====
+document.getElementById('searchInput').addEventListener('input', function() {
+  const query = this.value.toLowerCase();
+  if (!query) {
+    switchView(currentView);
+    return;
+  }
+
+  // Simple search in current table
+  const tables = document.querySelectorAll('.data-table tbody');
+  tables.forEach(tbody => {
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(query) ? '' : 'none';
+    });
+  });
+});
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeClientPanel();
+  }
+});
+
+// ===== INIT =====
+renderDashboard();

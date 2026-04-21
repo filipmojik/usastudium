@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# HEIC originals (too large, not used on web)
+*.HEIC
+*.heic
+
+# Thumbnails
+._*
+
+# IDE
+.vscode/
+.idea/
+
+# Unused large images (originals)
+IMG_1654.JPG
+IMG_4149.JPG
+IMG_8011.JPEG
+IMG_4866.HEIC

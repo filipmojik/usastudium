@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USA Studium – Admin CRM</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-name">USA Studium 🇺🇸</div>
+      <div class="sidebar-brand-sub">Admin CRM</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="sidebar-link active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Přehled
+      </a>
+      <a href="#" class="sidebar-link" data-view="leads">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Poptávky
+        <span class="badge" id="leadsBadge">5</span>
+      </a>
+      <a href="#" class="sidebar-link" data-view="calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Kalendář
+      </a>
+      <a href="#" class="sidebar-link" data-view="clients">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Klienti
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">VM</div>
+        <div class="sidebar-user-info">
+          <h4>Veronika Mojiková</h4>
+          <p>Konzultantka</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="top-header-left">
+        <div>
+          <h1 id="pageTitle">Přehled</h1>
+          <p id="pageSubtitle">Vítej zpět, Veroniko 👋</p>
+        </div>
+      </div>
+      <div class="top-header-right">
+        <div class="header-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Hledat klienta..." id="searchInput">
+        </div>
+        <button class="header-btn" id="notifBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notification-dot"></span>
+        </button>
+        <a href="index.html" class="header-btn" title="Zpět na web">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- ===== DASHBOARD VIEW ===== -->
+      <div class="view active" id="view-dashboard">
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <span class="stat-card-trend up">+12%</span>
+            </div>
+            <div class="stat-card-value" id="statLeads">5</div>
+            <div class="stat-card-label">Nové poptávky</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <span class="stat-card-trend up">+2</span>
+            </div>
+            <div class="stat-card-value" id="statClosed">3</div>
+            <div class="stat-card-label">Uzavřené spolupráce</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon yellow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" id="statMeetings">2</div>
+            <div class="stat-card-label">Schůzky tento týden</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-value" id="statConversion">60%</div>
+            <div class="stat-card-label">Konverzní poměr</div>
+          </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+          <!-- Recent Leads Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Poslední poptávky</h3>
+              <span class="card-header-action" data-view="leads">Zobrazit vše →</span>
+            </div>
+            <table class="data-table" id="dashboardTable">
+              <thead>
+                <tr>
+                  <th>Klient</th>
+                  <th>Stav</th>
+                  <th>Datum</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardTableBody">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Right column -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <!-- Upcoming Meetings -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Blížící se schůzky</h3>
+              </div>
+              <div class="card-body" id="upcomingMeetings">
+                <!-- Filled by JS -->
+              </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Aktivita</h3>
+              </div>
+              <div class="card-body" id="activityFeed">
+                <!-- Filled by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LEADS VIEW ===== -->
+      <div class="view" id="view-leads">
+        <div class="view-header">
+          <h2>Poptávky</h2>
+          <div class="view-filters">
+            <button class="filter-btn active" data-filter="all">Všechny</button>
+            <button class="filter-btn" data-filter="new">Nové</button>
+            <button class="filter-btn" data-filter="contacted">Nakontaktováno</button>
+            <button class="filter-btn" data-filter="scheduled">Schůzka</button>
+            <button class="filter-btn" data-filter="closed">Uzavřeno</button>
+          </div>
+        </div>
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Klient</th>
+                <th>E-mail</th>
+                <th>Telefon</th>
+                <th>Stav</th>
+                <th>Cíl</th>
+                <th>Datum</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== CALENDAR VIEW ===== -->
+      <div class="view" id="view-calendar">
+        <div class="view-header">
+          <h2>Správa dostupných hodin</h2>
+        </div>
+
+        <!-- Time slots manager -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Dostupné termíny</h3>
+            <span class="card-header-action" id="addSlotBtn">+ Přidat termín</span>
+          </div>
+          <div class="card-body">
+            <div id="timeSlotsContainer">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CLIENTS VIEW ===== -->
+      <div class="view" id="view-clients">
+        <div class="view-header">
+          <h2>Klienti</h2>
+        </div>
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Klient</th>
+                <th>E-mail</th>
+                <th>Stav</th>
+                <th>Další schůzka</th>
+                <th>Poznámek</th>
+              </tr>
+            </thead>
+            <tbody id="clientsTableBody">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ===== CLIENT SLIDE-OUT PANEL ===== -->
+<div class="client-panel-overlay" id="clientOverlay"></div>
+<div class="client-panel" id="clientPanel">
+  <div class="client-panel-header">
+    <h3>Profil klienta</h3>
+    <button class="client-panel-close" id="clientPanelClose">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <div class="client-panel-profile">
+    <div class="client-panel-avatar" id="panelAvatar">VM</div>
+    <div class="client-panel-name">
+      <h3 id="panelName">Jméno klienta</h3>
+      <p id="panelEmail">email@email.cz</p>
+    </div>
+  </div>
+
+  <div class="client-panel-body">
+    <!-- Contact info -->
+    <div class="panel-section">
+      <div class="panel-section-title">Kontaktní údaje</div>
+      <div class="panel-info-grid">
+        <div class="panel-info-item">
+          <label>Telefon</label>
+          <span id="panelPhone">+420 xxx xxx xxx</span>
+        </div>
+        <div class="panel-info-item">
+          <label>Datum poptávky</label>
+          <span id="panelDate">-</span>
+        </div>
+        <div class="panel-info-item">
+          <label>Stav</label>
+          <select class="status-select" id="panelStatus">
+            <option value="new">Nový</option>
+            <option value="contacted">Nakontaktováno</option>
+            <option value="scheduled">Schůzka</option>
+            <option value="closed">Uzavřeno</option>
+          </select>
+        </div>
+        <div class="panel-info-item">
+          <label>Cíl klienta</label>
+          <span id="panelGoal">-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Next meeting -->
+    <div class="panel-section">
+      <div class="panel-section-title">Další schůzka</div>
+      <div class="next-meeting-card" id="nextMeetingCard">
+        <div class="meeting-date-box">
+          <span class="day" id="panelMeetDay">-</span>
+          <span class="month" id="panelMeetMonth">-</span>
+        </div>
+        <div class="meeting-info">
+          <h4 id="panelMeetTitle">Žádná naplánovaná</h4>
+          <p id="panelMeetTime">-</p>
+        </div>
+        <button class="next-meeting-edit" id="editMeetingBtn">Upravit</button>
+      </div>
+      <div class="meeting-edit-grid" id="meetingEditGrid">
+        <input type="date" id="meetingDateInput">
+        <input type="time" id="meetingTimeInput">
+        <button class="meeting-save-btn" id="saveMeetingBtn">Uložit schůzku</button>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="panel-section">
+      <div class="panel-section-title">Poznámky z hovorů</div>
+      <div class="notes-list" id="notesList">
+        <!-- Filled by JS -->
+      </div>
+      <div class="note-input-wrapper">
+        <textarea class="note-input" id="noteInput" placeholder="Přidej poznámku..." rows="1"></textarea>
+        <button class="note-submit" id="addNoteBtn">Přidat</button>
+      </div>
+    </div>
+
+    <!-- Materials -->
+    <div class="panel-section">
+      <div class="panel-section-title">Materiály</div>
+      <div class="materials-list" id="materialsList">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>
