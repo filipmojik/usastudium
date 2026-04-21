@@ -46,8 +46,11 @@ if (loginForm) {
     
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      console.error('Login error:', error.message);
       loginError.style.display = 'block';
-      loginError.textContent = 'Chybný e-mail nebo heslo.';
+      let msg = 'Chybný e-mail nebo heslo.';
+      if (error.message.includes('Email not confirmed')) msg = 'E-mail není ověřen! Jdi do Supabase -> Authentication -> Providers a vypni "Confirm email" (nebo uživatele smaž, vypni to a založ znova).';
+      loginError.textContent = msg;
     }
   });
 }
