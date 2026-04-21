@@ -8,58 +8,89 @@ const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SU
 let mockClients = [];
 
 // ===== AUTH LOGIC =====
-const loginOverlay = document.getElementById('loginOverlay');
-const loginForm = document.getElementById('loginForm');
-const loginEmail = document.getElementById('loginEmail');
-const loginPassword = document.getElementById('loginPassword');
-const loginError = document.getElementById('loginError');
-const logoutBtn = document.getElementById('logoutBtn');
+document.addEventListener('DOMContentLoaded', () => {
+  const loginOverlay = document.getElementById('loginOverlay');
+  const loginForm = document.getElementById('loginForm');
+  const loginEmail = document.getElementById('loginEmail');
+  const loginPassword = document.getElementById('loginPassword');
+  const loginError = document.getElementById('loginError');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const loginBtn = document.getElementById('loginBtn');
 
-async function checkAuth() {
-  if (!supabase) return;
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    loginOverlay.classList.remove('active');
-    fetchLeads();
-  } else {
-    loginOverlay.classList.add('active');
+  async function handleLogin(e) {
+    if (e) e.preventDefault();
+    loginError.style.display = 'none';
+    
+    // Změna textu na načítání
+    const originalText = loginBtn.textContent;
+    loginBtn.textContent = 'Ověřuji...';
+    loginBtn.disabled = true;
+
+    const email = loginEmail.value;
+    const password = loginPassword.value;
+    
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    loginBtn.textContent = originalText;
+    loginBtn.disabled = false;
+
+    if (error) {
+      console.error('Login error:', error.message);
+      loginError.style.display = 'block';
+      let msg = 'Chybný e-mail nebo heslo.';
+      if (error.message.includes('Email not confirmed')) {
+        msg = 'E-mail není ověřen! Jdi do Supabase -> Authentication -> Providers a vypni "Confirm email".';
+      }
+      loginError.textContent = msg;
+    }
   }
-}
 
-if (supabase) {
-  supabase.auth.onAuthStateChange((event, session) => {
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  }
+  
+  if (loginBtn) {
+    // Pro jistotu
+    loginBtn.addEventListener('click', (e) => {
+      if (!loginForm.checkValidity()) return; // ať funguje HTML validace prázdných polí
+      e.preventDefault();
+      handleLogin(e);
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+    });
+  }
+
+  async function checkAuth() {
+    if (!supabase) return;
+    const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       loginOverlay.classList.remove('active');
       fetchLeads();
     } else {
       loginOverlay.classList.add('active');
     }
-  });
-}
+  }
 
-if (loginForm) {
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    loginError.style.display = 'none';
-    const email = loginEmail.value;
-    const password = loginPassword.value;
-    
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.error('Login error:', error.message);
-      loginError.style.display = 'block';
-      let msg = 'Chybný e-mail nebo heslo.';
-      if (error.message.includes('Email not confirmed')) msg = 'E-mail není ověřen! Jdi do Supabase -> Authentication -> Providers a vypni "Confirm email" (nebo uživatele smaž, vypni to a založ znova).';
-      loginError.textContent = msg;
-    }
-  });
-}
+  if (supabase) {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        if(loginOverlay) loginOverlay.classList.remove('active');
+        fetchLeads();
+      } else {
+        if(loginOverlay) loginOverlay.classList.add('active');
+      }
+    });
+  }
+  
+  // Expose checkAuth pro okamžité zavolání
+  window.checkAuth = checkAuth;
+  checkAuth();
+});
 
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-  });
-}
 
 // ===== FETCH DATA =====
 async function fetchLeads() {
@@ -618,5 +649,4 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== INIT =====
-checkAuth();
 renderDashboard();
