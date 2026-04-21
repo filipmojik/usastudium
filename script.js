@@ -1,5 +1,9 @@
 // ===== USA Studium – Script =====
 
+// ===== SUPABASE CONFIG =====
+const SUPABASE_URL = 'https://zkhinefqbebozbtxlzgf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraGluZWZxYmVib3pidHhsemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Nzg5OTIsImV4cCI6MjA5MjM1NDk5Mn0.E9xrvHCxdPpT_wCF_Tlwu2lbYiqwNMgje2Ux201slY8';
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 document.addEventListener('DOMContentLoaded', () => {
   // === Navigation scroll effect ===
   const nav = document.getElementById('navbar');
@@ -111,8 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const formSuccess = document.getElementById('formSuccess');
   
   if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.textContent = 'Odesílám...';
+      submitBtn.disabled = true;
       
       // Collect form data
       const formData = new FormData(contactForm);
@@ -121,18 +130,40 @@ document.addEventListener('DOMContentLoaded', () => {
         data[key] = value;
       });
       
-      console.log('Form submitted:', data);
-      
-      // Simulate submission
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.textContent = 'Odesílám...';
-      submitBtn.disabled = true;
-      
-      setTimeout(() => {
+      try {
+        if (!supabase) {
+          throw new Error('Supabase is not initialized. Please check your keys.');
+        }
+
+        // Combine date and time for nextMeeting if needed, but in the mock we have them separate. 
+        // For now let's insert into a simplified structure or the one matching mockClients.
+        const { error } = await supabase
+          .from('leads')
+          .insert([
+            {
+              first_name: data.firstName,
+              last_name: data.lastName,
+              email: data.email,
+              phone: data.phone,
+              goal: data.goal,
+              appointment_date: data.appointmentDate,
+              appointment_time: data.appointmentTime,
+              status: 'new'
+            }
+          ]);
+
+        if (error) throw error;
+
         contactForm.style.display = 'none';
         formSuccess.classList.add('show');
         formSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 1200);
+
+      } catch (err) {
+        console.error('Error submitting form:', err);
+        alert('Došlo k chybě při odesílání formuláře. Zkuste to prosím znovu nebo mě kontaktujte napřímo.');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
     });
   }
 

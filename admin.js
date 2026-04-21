@@ -1,94 +1,98 @@
 // ===== ADMIN CRM – JavaScript =====
 
-// ===== MOCK DATA =====
-const mockClients = [
-  {
-    id: 1,
-    firstName: 'Tomáš',
-    lastName: 'Novák',
-    email: 'tomas.novak@email.cz',
-    phone: '+420 777 123 456',
-    goal: 'Bakalářské studium v Kalifornii, obor Computer Science. Hledá stipendium.',
-    status: 'new',
-    date: '2025-04-18',
-    nextMeeting: null,
-    notes: [],
-    materials: [
-      { name: 'Checklist přihlášky', date: '2025-04-18' }
-    ]
-  },
-  {
-    id: 2,
-    firstName: 'Anna',
-    lastName: 'Svobodová',
-    email: 'anna.svobodova@gmail.com',
-    phone: '+420 608 987 654',
-    goal: 'Střední škola v New Hampshire, boarding school. Rodiče chtějí konzultaci.',
-    status: 'contacted',
-    date: '2025-04-15',
-    nextMeeting: { date: '2025-04-25', time: '16:00' },
-    notes: [
-      { text: 'Volali jsme – rodiče mají zájem o boarding schools, rozpočet cca 30k USD/rok.', date: '2025-04-16' }
-    ],
-    materials: [
-      { name: 'Seznam boarding schools', date: '2025-04-16' },
-      { name: 'Přehled stipendií', date: '2025-04-16' }
-    ]
-  },
-  {
-    id: 3,
-    firstName: 'Martin',
-    lastName: 'Krejčí',
-    email: 'martin.krejci@seznam.cz',
-    phone: '+420 732 456 789',
-    goal: 'Magisterské studium, MBA v Texasu. Chce plné stipendium.',
-    status: 'scheduled',
-    date: '2025-04-10',
-    nextMeeting: { date: '2025-04-22', time: '15:00' },
-    notes: [
-      { text: 'První schůzka proběhla, Martin má skvělé GPA (3.8). Doporučuji Texas A&M a UT Austin.', date: '2025-04-12' },
-      { text: 'Poslal jsem mu seznam programů a deadlines. Čekám na odpověď ohledně GMAT skóre.', date: '2025-04-14' }
-    ],
-    materials: [
-      { name: 'MBA programy v Texasu', date: '2025-04-12' },
-      { name: 'GMAT příprava', date: '2025-04-14' },
-      { name: 'Motivační dopis – draft', date: '2025-04-14' }
-    ]
-  },
-  {
-    id: 4,
-    firstName: 'Eliška',
-    lastName: 'Dvořáková',
-    email: 'eliska.dvorakova@email.cz',
-    phone: '+420 605 321 987',
-    goal: 'Studium biologie na univerzitě v Severní Karolíně. Potřebuje pomoc s TOEFL.',
-    status: 'closed',
-    date: '2025-03-28',
-    nextMeeting: null,
-    notes: [
-      { text: 'Eliška podala přihlášku na UNC Asheville i Appalachian State. TOEFL 95 bodů.', date: '2025-04-01' },
-      { text: 'Přijata na UNC Asheville s částečným stipendiem! 🎉', date: '2025-04-15' }
-    ],
-    materials: [
-      { name: 'Přihláška UNC Asheville', date: '2025-03-30' },
-      { name: 'TOEFL výsledky', date: '2025-04-01' },
-      { name: 'Acceptance letter', date: '2025-04-15' }
-    ]
-  },
-  {
-    id: 5,
-    firstName: 'Jakub',
-    lastName: 'Procházka',
-    email: 'jakub.prochazka@outlook.com',
-    phone: '+420 773 654 321',
-    goal: 'Community college v Arizoně, pak přestup na Arizona State. Rozpočet omezený.',
-    status: 'new',
-    date: '2025-04-19',
-    nextMeeting: null,
-    notes: [],
-    materials: []
+// ===== SUPABASE CONFIG =====
+const SUPABASE_URL = 'https://zkhinefqbebozbtxlzgf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpraGluZWZxYmVib3pidHhsemdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Nzg5OTIsImV4cCI6MjA5MjM1NDk5Mn0.E9xrvHCxdPpT_wCF_Tlwu2lbYiqwNMgje2Ux201slY8';
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+let mockClients = [];
+
+// ===== AUTH LOGIC =====
+const loginOverlay = document.getElementById('loginOverlay');
+const loginForm = document.getElementById('loginForm');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+
+async function checkAuth() {
+  if (!supabase) return;
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    loginOverlay.classList.remove('active');
+    fetchLeads();
+  } else {
+    loginOverlay.classList.add('active');
   }
-];
+}
+
+if (supabase) {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      loginOverlay.classList.remove('active');
+      fetchLeads();
+    } else {
+      loginOverlay.classList.add('active');
+    }
+  });
+}
+
+if (loginForm) {
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.style.display = 'none';
+    const email = loginEmail.value;
+    const password = loginPassword.value;
+    
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      loginError.style.display = 'block';
+      loginError.textContent = 'Chybný e-mail nebo heslo.';
+    }
+  });
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+  });
+}
+
+// ===== FETCH DATA =====
+async function fetchLeads() {
+  if (!supabase) return;
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false });
+    
+  if (error) {
+    console.error('Error fetching leads:', error);
+    return;
+  }
+  
+  // Transform DB format to app format
+  mockClients = data.map(lead => ({
+    id: lead.id,
+    firstName: lead.first_name,
+    lastName: lead.last_name,
+    email: lead.email,
+    phone: lead.phone,
+    goal: lead.goal,
+    status: lead.status || 'new',
+    date: lead.created_at || '2025-01-01',
+    nextMeeting: lead.appointment_date && lead.appointment_time ? {
+      date: lead.appointment_date,
+      time: lead.appointment_time
+    } : null,
+    notes: lead.notes || [],
+    materials: lead.materials || []
+  }));
+  
+  if (currentView === 'dashboard') renderDashboard();
+  if (currentView === 'leads') renderLeadsTable();
+  if (currentView === 'clients') renderClientsTable();
+}
 
 // Available time slots
 let availableSlots = {
@@ -434,10 +438,27 @@ document.getElementById('clientPanelClose').addEventListener('click', closeClien
 document.getElementById('clientOverlay').addEventListener('click', closeClientPanel);
 
 // Status change
-document.getElementById('panelStatus').addEventListener('change', function() {
+document.getElementById('panelStatus').addEventListener('change', async function() {
   const client = getClient(currentClientId);
   if (client) {
+    const oldStatus = client.status;
     client.status = this.value;
+    
+    // Save to Supabase
+    if (supabase) {
+      const { error } = await supabase
+        .from('leads')
+        .update({ status: client.status })
+        .eq('id', client.id);
+        
+      if (error) {
+        console.error('Error updating status:', error);
+        client.status = oldStatus; // revert on error
+        this.value = oldStatus;
+        return;
+      }
+    }
+    
     // Re-render active views
     if (currentView === 'dashboard') renderDashboard();
     if (currentView === 'leads') renderLeadsTable();
@@ -460,17 +481,33 @@ function renderNotes(client) {
   }
 }
 
-document.getElementById('addNoteBtn').addEventListener('click', () => {
+document.getElementById('addNoteBtn').addEventListener('click', async () => {
   const input = document.getElementById('noteInput');
   const text = input.value.trim();
   if (!text || !currentClientId) return;
 
   const client = getClient(currentClientId);
-  client.notes.push({
+  const newNote = {
     text: text,
     date: new Date().toISOString().split('T')[0]
-  });
+  };
+  
+  const updatedNotes = [...(client.notes || []), newNote];
+  
+  // Save to Supabase
+  if (supabase) {
+    const { error } = await supabase
+      .from('leads')
+      .update({ notes: updatedNotes })
+      .eq('id', client.id);
+      
+    if (error) {
+      console.error('Error saving note:', error);
+      return;
+    }
+  }
 
+  client.notes = updatedNotes;
   input.value = '';
   renderNotes(client);
   if (currentView === 'clients') renderClientsTable();
@@ -512,13 +549,30 @@ document.getElementById('editMeetingBtn').addEventListener('click', () => {
   }
 });
 
-document.getElementById('saveMeetingBtn').addEventListener('click', () => {
+document.getElementById('saveMeetingBtn').addEventListener('click', async () => {
   const date = document.getElementById('meetingDateInput').value;
   const time = document.getElementById('meetingTimeInput').value;
 
   if (!date || !time || !currentClientId) return;
 
   const client = getClient(currentClientId);
+  
+  // Save to Supabase
+  if (supabase) {
+    const { error } = await supabase
+      .from('leads')
+      .update({
+        appointment_date: date,
+        appointment_time: time
+      })
+      .eq('id', client.id);
+      
+    if (error) {
+      console.error('Error saving meeting:', error);
+      return;
+    }
+  }
+
   client.nextMeeting = { date, time };
 
   // Update panel
@@ -561,4 +615,5 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== INIT =====
+checkAuth();
 renderDashboard();

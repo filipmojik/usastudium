@@ -52,6 +52,10 @@
           <p>Konzultantka</p>
         </div>
       </div>
+      <button id="logoutBtn" class="logout-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Odhlásit se
+      </button>
     </div>
   </aside>
 
@@ -346,6 +350,31 @@
   </div>
 </div>
 
+<!-- ===== LOGIN MODAL ===== -->
+<div class="login-overlay active" id="loginOverlay">
+  <div class="login-modal">
+    <div class="login-brand">
+      <div class="sidebar-brand-name" style="color:var(--text-dark)">USA Studium 🇺🇸</div>
+      <div class="sidebar-brand-sub">Admin CRM</div>
+    </div>
+    <h2>Přihlášení</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" placeholder="admin@usastudium.cz" required>
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Heslo</label>
+        <input type="password" id="loginPassword" placeholder="******" required>
+      </div>
+      <button type="submit" class="btn-primary" id="loginBtn" style="width:100%; justify-content:center;">Přihlásit se</button>
+      <div id="loginError" style="color:var(--status-new-text); font-size: 0.9rem; margin-top:10px; display:none; text-align:center;">Chybný e-mail nebo heslo</div>
+    </form>
+  </div>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="admin.js"></script>
 </body>
 </html>
