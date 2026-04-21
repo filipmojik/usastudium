@@ -1439,8 +1439,8 @@ h1, h2, h3, h4 {
   
   .map-stop-left,
   .map-stop-right {
-    left: auto;
-    right: auto;
+    left: auto !important;
+    right: auto !important;
   }
   
   .map-finish {
@@ -1519,6 +1519,19 @@ h1, h2, h3, h4 {
   .map-stop {
     flex-direction: column;
     align-items: flex-start;
+    gap: var(--space-md);
+  }
+  
+  .linkedin-cta {
+    font-size: 1.3rem; /* scale down huge btn */
+    padding: var(--space-md) var(--space-xl);
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .linkedin-cta-text {
+    white-space: normal;
+    text-align: center;
   }
   
   .form-grid {
@@ -1533,18 +1546,37 @@ h1, h2, h3, h4 {
 
 @media (max-width: 480px) {
   .container {
-    padding: 0 var(--space-lg);
+    padding: 0 var(--space-md); /* slightly smaller edge padding */
   }
   
   .section {
-    padding: var(--space-3xl) 0;
+    padding: var(--space-2xl) 0; /* less padding on phones */
   }
   
   .contact-form-wrapper {
-    padding: var(--space-xl);
+    padding: var(--space-xl) var(--space-lg);
   }
   
   .service-dot {
     margin-top: 6px;
+  }
+  
+  .hero-inner {
+    gap: var(--space-xl);
+  }
+  
+  .nav-logo-name {
+    font-size: 1.6rem;
+  }
+  
+  .about-title, .section-title {
+    font-size: 1.3rem;
+  }
+  
+  .about-photo-wrapper {
+    margin: 0 -var(--space-md);
+  }
+  .about-photo {
+    border-radius: 0;
   }
 }
