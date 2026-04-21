@@ -1388,11 +1388,13 @@ h1, h2, h3, h4 {
 .stagger-children.visible > *:nth-child(6) { transition-delay: 0.5s; opacity: 1; transform: translateY(0); }
 
 /* ===== RESPONSIVE ===== */
+
+/* ---------- TABLET (≤1024px) ---------- */
 @media (max-width: 1024px) {
   .hero-inner {
     grid-template-columns: 1fr;
     text-align: center;
-    gap: var(--space-3xl);
+    gap: var(--space-2xl);
   }
   
   .hero-subtitle {
@@ -1402,22 +1404,37 @@ h1, h2, h3, h4 {
   
   .hero-cta-group {
     justify-content: center;
+    flex-wrap: wrap;
   }
   
   .hero-photo-frame {
-    width: 320px;
-    height: 400px;
+    width: 300px;
+    height: 380px;
     margin: 0 auto;
+  }
+  
+  .hero-float {
+    display: none;
+  }
+  
+  .hero-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-xl);
   }
   
   .about-inner {
     grid-template-columns: 1fr;
-    gap: var(--space-3xl);
+    gap: var(--space-2xl);
   }
   
   .about-photo {
-    max-width: 400px;
+    max-width: 360px;
     margin: 0 auto;
+  }
+  
+  .about-cta-group {
+    justify-content: center;
   }
   
   /* Treasure map goes vertical */
@@ -1433,14 +1450,27 @@ h1, h2, h3, h4 {
     position: relative;
     top: auto !important;
     width: 100%;
-    margin-bottom: var(--space-2xl);
-    flex-direction: row;
+    margin-bottom: var(--space-3xl);
+    flex-direction: column;
+    align-items: center;
   }
   
   .map-stop-left,
   .map-stop-right {
     left: auto !important;
     right: auto !important;
+  }
+  
+  .map-pin {
+    position: relative;
+    top: auto;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    display: flex;
+    justify-content: center;
+    margin-bottom: -22px;
+    z-index: 10;
   }
   
   .map-finish {
@@ -1457,11 +1487,13 @@ h1, h2, h3, h4 {
   
   .contact-inner {
     grid-template-columns: 1fr;
-    gap: var(--space-3xl);
+    gap: var(--space-2xl);
   }
 }
 
+/* ---------- MOBILE (≤768px) ---------- */
 @media (max-width: 768px) {
+  /* Navigation */
   .nav-links {
     display: none;
     position: fixed;
@@ -1471,6 +1503,7 @@ h1, h2, h3, h4 {
     bottom: 0;
     background: rgba(255, 248, 240, 0.98);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -1491,42 +1524,155 @@ h1, h2, h3, h4 {
     z-index: 1001;
   }
   
+  /* Hero */
   .hero-title {
-    font-size: clamp(1.8rem, 6vw, 2.5rem);
+    font-size: clamp(1.6rem, 7vw, 2.4rem);
+    padding: 0 var(--space-sm);
+  }
+  
+  .hero-subtitle {
+    font-size: 0.95rem;
+    padding: 0 var(--space-sm);
+  }
+  
+  .hero-cta-group {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: auto;
+    min-width: 250px;
+    max-width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-md) var(--space-xl);
+    font-size: 0.95rem;
   }
   
   .hero-photo-frame {
     width: 260px;
-    height: 340px;
+    height: 330px;
+  }
+  
+  .hero-photo-decor {
+    top: 10px;
+    left: 10px;
+  }
+  
+  .hero-stats {
+    gap: var(--space-lg);
+  }
+  
+  .hero-stat-number {
+    font-size: 1.4rem;
+  }
+  
+  .hero-stat-label {
+    font-size: 0.7rem;
+  }
+  
+  /* About */
+  .about-photo {
+    max-width: 320px;
+    margin: 0 auto;
+    aspect-ratio: 4/5;
+  }
+  
+  .about-label, .section-label {
+    font-size: 2rem;
+  }
+  
+  .about-text {
+    font-size: 0.95rem;
   }
   
   .about-highlights {
     grid-template-columns: 1fr;
+    gap: var(--space-md);
   }
   
+  .about-cta-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  /* Services */
   .service-row {
-    padding: var(--space-lg) var(--space-lg);
+    padding: var(--space-lg) var(--space-md);
+    gap: var(--space-md);
   }
   
   .service-row:hover {
-    padding-left: var(--space-xl);
+    padding-left: var(--space-lg);
   }
   
   .service-row-icon {
     display: none;
   }
   
+  .service-row-content h3 {
+    font-size: 1.05rem;
+  }
+  
+  .service-row-content p {
+    font-size: 0.88rem;
+  }
+  
+  /* Journey map */
   .map-stop {
-    flex-direction: column;
-    align-items: flex-start;
+    gap: 0;
+  }
+  
+  .map-card-info {
+    padding: var(--space-md);
+  }
+  
+  .map-card-year {
+    font-size: 1.3rem;
+  }
+  
+  .map-card-title {
+    font-size: 1rem;
+  }
+  
+  .map-card-text {
+    font-size: 0.88rem;
+  }
+
+  /* Contact */
+  .section-header {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .contact-info-item {
     gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+  
+  .contact-info-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+  
+  .contact-info-item h4 {
+    font-size: 1rem;
+  }
+  
+  .contact-info-item p {
+    font-size: 0.88rem;
   }
   
   .linkedin-cta {
-    font-size: 1.3rem; /* scale down huge btn */
-    padding: var(--space-md) var(--space-xl);
+    font-size: 1.15rem;
+    padding: var(--space-md) var(--space-lg);
     width: 100%;
     justify-content: center;
+    gap: var(--space-md);
   }
   
   .linkedin-cta-text {
@@ -1534,49 +1680,166 @@ h1, h2, h3, h4 {
     text-align: center;
   }
   
+  .linkedin-cta-arrow {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .contact-form-wrapper {
+    padding: var(--space-xl);
+  }
+  
+  .contact-form-title {
+    font-size: 1.2rem;
+  }
+  
   .form-grid {
     grid-template-columns: 1fr;
   }
   
+  /* Footer */
   .footer-inner {
     flex-direction: column;
     text-align: center;
+    gap: var(--space-xl);
+  }
+  
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-lg);
   }
 }
 
+/* ---------- SMALL PHONE (≤480px) ---------- */
 @media (max-width: 480px) {
   .container {
-    padding: 0 var(--space-md); /* slightly smaller edge padding */
+    padding: 0 var(--space-md);
   }
   
   .section {
-    padding: var(--space-2xl) 0; /* less padding on phones */
+    padding: var(--space-2xl) 0;
   }
   
-  .contact-form-wrapper {
-    padding: var(--space-xl) var(--space-lg);
-  }
-  
-  .service-dot {
-    margin-top: 6px;
+  .hero {
+    padding-top: calc(70px + var(--space-xl));
   }
   
   .hero-inner {
     gap: var(--space-xl);
   }
   
+  .hero-title {
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+  
+  .hero-subtitle {
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  
+  .hero-photo-frame {
+    width: 220px;
+    height: 280px;
+  }
+  
+  .hero-photo-tag {
+    font-size: 1rem;
+    padding: var(--space-xs) var(--space-lg);
+  }
+  
+  .hero-stats {
+    flex-direction: row;
+    gap: var(--space-md);
+    padding-top: var(--space-lg);
+    margin-top: var(--space-xl);
+  }
+  
   .nav-logo-name {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+  }
+  
+  .nav-logo-top {
+    font-size: 0.6rem;
+  }
+  
+  /* About */
+  .about-label, .section-label {
+    font-size: 1.8rem;
   }
   
   .about-title, .section-title {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
   }
   
-  .about-photo-wrapper {
-    margin: 0 -var(--space-md);
+  .about-text, .section-desc {
+    font-size: 0.9rem;
   }
+  
   .about-photo {
-    border-radius: 0;
+    border-radius: var(--radius-md);
+  }
+  
+  /* Services */
+  .service-dot {
+    margin-top: 6px;
+  }
+  
+  .service-row {
+    padding: var(--space-md) 0;
+  }
+  
+  /* Journey */
+  .map-card-photo {
+    aspect-ratio: 16/10;
+  }
+  
+  .map-pin-inner {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  
+  /* Contact */
+  .contact-form-wrapper {
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+  }
+  
+  .contact-form-title {
+    font-size: 1.1rem;
+  }
+  
+  .contact-form-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .form-group label {
+    font-size: 0.8rem;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: var(--space-md);
+    font-size: 0.88rem;
+  }
+  
+  .linkedin-cta {
+    font-size: 1rem;
+    padding: var(--space-md) var(--space-md);
+  }
+  
+  /* Footer */
+  .footer-links {
+    gap: var(--space-md);
+  }
+  
+  .footer-links a {
+    font-size: 0.8rem;
+  }
+  
+  .footer-copy {
+    font-size: 0.72rem;
   }
 }
