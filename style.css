@@ -1494,11 +1494,16 @@ h1, h2, h3, h4 {
 
 /* ---------- MOBILE (≤768px) ---------- */
 @media (max-width: 768px) {
+  html {
+    font-size: 18.4px; /* Increases all rem-based typography and spacing by ~15% */
+  }
+
   /* Smart visual reordering for Mobile */
   .hero-inner {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
+    padding-bottom: var(--space-4xl); /* Lift buttons from bottom edge */
   }
   .hero-content {
     display: contents;
