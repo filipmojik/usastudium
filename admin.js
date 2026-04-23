@@ -126,6 +126,8 @@ async function fetchLeads() {
   if (currentView === 'dashboard') renderDashboard();
   if (currentView === 'leads') renderLeadsTable();
   if (currentView === 'clients') renderClientsTable();
+  if (currentView === 'calendar') renderCalendar();
+  renderClientSublist();
 }
 
 let availableSlots = {};
@@ -174,8 +176,8 @@ function switchView(viewName) {
 
   const titles = {
     dashboard: ['Přehled', 'Vítej zpět, Veroniko 👋'],
-    leads: ['Poptávky', 'Správa příchozích kontaktů'],
-    calendar: ['Kalendář', 'Správa dostupných termínů'],
+    leads: ['Rezervace', 'Správa příchozích rezervací'],
+    calendar: ['Kalendář', 'Schůzky a dostupné termíny'],
     clients: ['Klienti', 'Všichni tvoji klienti']
   };
 
@@ -185,7 +187,7 @@ function switchView(viewName) {
   // Render view-specific content
   if (viewName === 'leads') renderLeadsTable();
   if (viewName === 'clients') renderClientsTable();
-  if (viewName === 'calendar') renderTimeSlots();
+  if (viewName === 'calendar') { renderCalendar(); renderTimeSlots(); }
   if (viewName === 'dashboard') renderDashboard();
 }
 
@@ -277,12 +279,15 @@ function renderDashboard() {
 
   // Upcoming meetings
   const meetingsEl = document.getElementById('upcomingMeetings');
-  const withMeetings = mockClients.filter(c => c.nextMeeting).sort((a, b) => new Date(a.nextMeeting.date) - new Date(b.nextMeeting.date));
+  const todayStr = new Date().toISOString().split('T')[0];
+  const withMeetings = mockClients
+    .filter(c => c.nextMeeting && c.nextMeeting.date >= todayStr)
+    .sort((a, b) => new Date(a.nextMeeting.date) - new Date(b.nextMeeting.date));
 
   if (withMeetings.length === 0) {
     meetingsEl.innerHTML = '<div class="empty-state"><p>Žádné schůzky naplánované</p></div>';
   } else {
-    meetingsEl.innerHTML = withMeetings.map(client => {
+    meetingsEl.innerHTML = withMeetings.slice(0, 5).map(client => {
       const d = formatDateShort(client.nextMeeting.date);
       return `
         <div class="meeting-item" onclick="openClientPanel(${client.id})">
@@ -299,26 +304,6 @@ function renderDashboard() {
       `;
     }).join('');
   }
-
-  // Activity feed
-  const feedEl = document.getElementById('activityFeed');
-  const activities = [
-    { color: 'blue', text: '<strong>Jakub Procházka</strong> poslal novou poptávku', time: 'Před 2 hodinami' },
-    { color: 'green', text: '<strong>Eliška Dvořáková</strong> přijata na UNC Asheville 🎉', time: 'Před 5 dny' },
-    { color: 'yellow', text: 'Schůzka s <strong>Martinem Krejčím</strong> naplánována', time: 'Před týdnem' },
-    { color: 'purple', text: '<strong>Anna Svobodová</strong> nakontaktována', time: 'Před 5 dny' },
-    { color: 'blue', text: '<strong>Tomáš Novák</strong> poslal novou poptávku', time: 'Před 2 dny' }
-  ];
-
-  feedEl.innerHTML = activities.map(a => `
-    <div class="activity-item">
-      <div class="activity-dot ${a.color}"></div>
-      <div>
-        <div class="activity-text">${a.text}</div>
-        <div class="activity-time">${a.time}</div>
-      </div>
-    </div>
-  `).join('');
 }
 
 // ===== LEADS TABLE =====
@@ -392,6 +377,144 @@ function renderClientsTable() {
     tbody.appendChild(tr);
   });
 }
+
+// ===== CLIENT SIDEBAR SUBLIST =====
+function renderClientSublist() {
+  const list = document.getElementById('clientSublist');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const sorted = [...mockClients].sort((a, b) => {
+    const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
+  if (sorted.length === 0) {
+    list.innerHTML = '<div class="sidebar-sublist-empty">Zatím žádní klienti</div>';
+    return;
+  }
+
+  sorted.forEach(client => {
+    const item = document.createElement('a');
+    item.href = '#';
+    item.className = 'sidebar-sublist-item';
+    item.innerHTML = `
+      <span class="sidebar-sublist-avatar">${getInitials(client.firstName, client.lastName)}</span>
+      <span class="sidebar-sublist-name">${client.firstName} ${client.lastName}</span>
+    `;
+    item.onclick = (e) => {
+      e.preventDefault();
+      openClientPanel(client.id);
+    };
+    list.appendChild(item);
+  });
+}
+
+// ===== MEETINGS CALENDAR =====
+let calendarCurrentDate = new Date();
+
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  const label = document.getElementById('calendarMonthLabel');
+  if (!grid || !label) return;
+
+  const year = calendarCurrentDate.getFullYear();
+  const month = calendarCurrentDate.getMonth();
+  const monthNames = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec'];
+  label.textContent = `${monthNames[month]} ${year}`;
+
+  // Build meeting map: date -> [clients]
+  const meetingMap = {};
+  mockClients.forEach(c => {
+    if (c.nextMeeting && c.nextMeeting.date) {
+      if (!meetingMap[c.nextMeeting.date]) meetingMap[c.nextMeeting.date] = [];
+      meetingMap[c.nextMeeting.date].push(c);
+    }
+  });
+
+  grid.innerHTML = '';
+
+  // Weekday headers (Mon-first)
+  const weekdays = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+  weekdays.forEach(w => {
+    const h = document.createElement('div');
+    h.className = 'cal-weekday';
+    h.textContent = w;
+    grid.appendChild(h);
+  });
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  // Adjust: JS getDay() = 0=Sunday, convert to Monday-first
+  const firstWeekday = (firstDay.getDay() + 6) % 7;
+  const todayIso = new Date().toISOString().split('T')[0];
+
+  // Empty cells before month starts
+  for (let i = 0; i < firstWeekday; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day cal-day-empty';
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const meetings = meetingMap[dateStr] || [];
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+    if (dateStr === todayIso) cell.classList.add('cal-day-today');
+    if (meetings.length > 0) cell.classList.add('cal-day-has-meetings');
+
+    cell.innerHTML = `
+      <div class="cal-day-num">${d}</div>
+      ${meetings.slice(0, 2).map(m => `<div class="cal-day-meeting">${m.nextMeeting.time} ${m.firstName}</div>`).join('')}
+      ${meetings.length > 2 ? `<div class="cal-day-more">+${meetings.length - 2}</div>` : ''}
+    `;
+
+    if (meetings.length > 0) {
+      cell.style.cursor = 'pointer';
+      cell.onclick = () => showDayDetail(dateStr, meetings);
+    }
+
+    grid.appendChild(cell);
+  }
+
+  document.getElementById('calendarDayDetail').innerHTML = '';
+}
+
+function showDayDetail(dateStr, meetings) {
+  const detail = document.getElementById('calendarDayDetail');
+  const dateObj = new Date(dateStr + 'T00:00:00');
+  const dayName = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'][dateObj.getDay()];
+
+  detail.innerHTML = `
+    <h4 class="cal-detail-title">${dayName} ${dateObj.getDate()}. ${dateObj.getMonth() + 1}. ${dateObj.getFullYear()}</h4>
+    <div class="cal-detail-list">
+      ${meetings.sort((a, b) => a.nextMeeting.time.localeCompare(b.nextMeeting.time)).map(m => `
+        <div class="cal-detail-item" onclick="openClientPanel(${m.id})">
+          <span class="cal-detail-time">${m.nextMeeting.time}</span>
+          <div class="cal-detail-client">
+            <div class="client-avatar">${getInitials(m.firstName, m.lastName)}</div>
+            <div>
+              <div class="client-name">${m.firstName} ${m.lastName}</div>
+              <div class="client-email">${m.email}</div>
+            </div>
+          </div>
+          <span class="status-badge ${m.status}">${getStatusLabel(m.status)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const prev = document.getElementById('calPrevBtn');
+  const next = document.getElementById('calNextBtn');
+  const today = document.getElementById('calTodayBtn');
+  if (prev) prev.addEventListener('click', () => { calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() - 1); renderCalendar(); });
+  if (next) next.addEventListener('click', () => { calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + 1); renderCalendar(); });
+  if (today) today.addEventListener('click', () => { calendarCurrentDate = new Date(); renderCalendar(); });
+});
 
 // ===== TIME SLOTS =====
 function formatSlotDate(dateStr) {
@@ -666,18 +789,107 @@ document.getElementById('noteInput').addEventListener('keydown', (e) => {
 // ===== MATERIALS =====
 function renderMaterials(client) {
   const list = document.getElementById('materialsList');
-  if (client.materials.length === 0) {
+  if (!client.materials || client.materials.length === 0) {
     list.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">Žádné materiály</p>';
   } else {
-    list.innerHTML = client.materials.map(m => `
+    list.innerHTML = client.materials.map((m, idx) => `
       <div class="material-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <span>${m.name}</span>
+        ${m.url ? `<a href="${m.url}" target="_blank" rel="noopener" class="material-name">${m.name}</a>` : `<span class="material-name">${m.name}</span>`}
         <span class="material-date">${formatDate(m.date)}</span>
+        <button class="material-remove" data-idx="${idx}" title="Smazat">×</button>
       </div>
     `).join('');
+
+    list.querySelectorAll('.material-remove').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.idx, 10);
+        await removeMaterial(client, idx);
+      });
+    });
   }
 }
+
+async function removeMaterial(client, idx) {
+  const material = client.materials[idx];
+  if (!confirm(`Smazat "${material.name}"?`)) return;
+
+  const updated = client.materials.filter((_, i) => i !== idx);
+
+  // Delete from storage if it had a path
+  if (db && material.path) {
+    await db.storage.from('client-files').remove([material.path]);
+  }
+
+  if (db) {
+    const { error } = await db.from('leads').update({ materials: updated }).eq('id', client.id);
+    if (error) { alert('Chyba při mazání.'); return; }
+  }
+  client.materials = updated;
+  renderMaterials(client);
+}
+
+// File upload
+document.addEventListener('DOMContentLoaded', () => {
+  const fileInput = document.getElementById('fileUploadInput');
+  const fileLabel = document.getElementById('fileUploadLabel');
+  if (!fileInput) return;
+
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file || !currentClientId) return;
+    const client = getClient(currentClientId);
+    if (!client) return;
+
+    const originalLabel = fileLabel.textContent;
+    fileLabel.textContent = 'Nahrávám...';
+    fileInput.disabled = true;
+
+    try {
+      if (!db) throw new Error('DB není dostupná.');
+
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${client.id}/${Date.now()}-${safeName}`;
+
+      const { error: upErr } = await db.storage
+        .from('client-files')
+        .upload(path, file, { upsert: false });
+
+      if (upErr) {
+        if (upErr.message && upErr.message.toLowerCase().includes('bucket')) {
+          alert('Storage bucket "client-files" neexistuje. Vytvoř ho v Supabase dashboardu (Storage → New bucket → name: client-files, public).');
+        } else {
+          alert('Chyba nahrávání: ' + upErr.message);
+        }
+        throw upErr;
+      }
+
+      const { data: urlData } = db.storage.from('client-files').getPublicUrl(path);
+
+      const newMaterial = {
+        name: file.name,
+        path: path,
+        url: urlData.publicUrl,
+        size: file.size,
+        date: new Date().toISOString().split('T')[0]
+      };
+
+      const updated = [...(client.materials || []), newMaterial];
+      const { error: dbErr } = await db.from('leads').update({ materials: updated }).eq('id', client.id);
+      if (dbErr) throw dbErr;
+
+      client.materials = updated;
+      renderMaterials(client);
+    } catch (err) {
+      console.error('Upload error:', err);
+    } finally {
+      fileLabel.textContent = originalLabel;
+      fileInput.disabled = false;
+      fileInput.value = '';
+    }
+  });
+});
 
 // ===== MEETING EDIT =====
 document.getElementById('editMeetingBtn').addEventListener('click', () => {

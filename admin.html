@@ -31,8 +31,8 @@
       </a>
       <a href="#" class="sidebar-link" data-view="leads">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Poptávky
-        <span class="badge" id="leadsBadge">5</span>
+        Rezervace
+        <span class="badge" id="leadsBadge">0</span>
       </a>
       <a href="#" class="sidebar-link" data-view="calendar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -42,6 +42,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         Klienti
       </a>
+      <div class="sidebar-sublist" id="clientSublist">
+        <!-- Filled by JS -->
+      </div>
     </nav>
 
     <div class="sidebar-footer">
@@ -97,10 +100,9 @@
               <div class="stat-card-icon blue">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
-              <span class="stat-card-trend up">+12%</span>
             </div>
-            <div class="stat-card-value" id="statLeads">5</div>
-            <div class="stat-card-label">Nové poptávky</div>
+            <div class="stat-card-value" id="statLeads">0</div>
+            <div class="stat-card-label">Nové rezervace</div>
           </div>
 
           <div class="stat-card">
@@ -108,9 +110,8 @@
               <div class="stat-card-icon green">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
               </div>
-              <span class="stat-card-trend up">+2</span>
             </div>
-            <div class="stat-card-value" id="statClosed">3</div>
+            <div class="stat-card-value" id="statClosed">0</div>
             <div class="stat-card-label">Uzavřené spolupráce</div>
           </div>
 
@@ -120,8 +121,8 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </div>
             </div>
-            <div class="stat-card-value" id="statMeetings">2</div>
-            <div class="stat-card-label">Schůzky tento týden</div>
+            <div class="stat-card-value" id="statMeetings">0</div>
+            <div class="stat-card-label">Nadcházející schůzky</div>
           </div>
 
           <div class="stat-card">
@@ -130,7 +131,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               </div>
             </div>
-            <div class="stat-card-value" id="statConversion">60%</div>
+            <div class="stat-card-value" id="statConversion">0%</div>
             <div class="stat-card-label">Konverzní poměr</div>
           </div>
         </div>
@@ -140,7 +141,7 @@
           <!-- Recent Leads Table -->
           <div class="card">
             <div class="card-header">
-              <h3>Poslední poptávky</h3>
+              <h3>Poslední rezervace</h3>
               <span class="card-header-action" data-view="leads">Zobrazit vše →</span>
             </div>
             <table class="data-table" id="dashboardTable">
@@ -157,26 +158,13 @@
             </table>
           </div>
 
-          <!-- Right column -->
-          <div style="display:flex;flex-direction:column;gap:20px;">
-            <!-- Upcoming Meetings -->
-            <div class="card">
-              <div class="card-header">
-                <h3>Blížící se schůzky</h3>
-              </div>
-              <div class="card-body" id="upcomingMeetings">
-                <!-- Filled by JS -->
-              </div>
+          <!-- Upcoming Meetings -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Blížící se schůzky</h3>
             </div>
-
-            <!-- Activity Feed -->
-            <div class="card">
-              <div class="card-header">
-                <h3>Aktivita</h3>
-              </div>
-              <div class="card-body" id="activityFeed">
-                <!-- Filled by JS -->
-              </div>
+            <div class="card-body" id="upcomingMeetings">
+              <!-- Filled by JS -->
             </div>
           </div>
         </div>
@@ -185,7 +173,7 @@
       <!-- ===== LEADS VIEW ===== -->
       <div class="view" id="view-leads">
         <div class="view-header">
-          <h2>Poptávky</h2>
+          <h2>Rezervace</h2>
           <div class="view-filters">
             <button class="filter-btn active" data-filter="all">Všechny</button>
             <button class="filter-btn" data-filter="new">Nové</button>
@@ -216,8 +204,28 @@
       <!-- ===== CALENDAR VIEW ===== -->
       <div class="view" id="view-calendar">
         <div class="view-header">
-          <h2>Správa dostupných hodin</h2>
-          <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">Termíny, které tu přidáš, se okamžitě zobrazí na webu ve formuláři.</p>
+          <h2>Kalendář</h2>
+          <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">Přehled tvých schůzek a správa dostupných termínů pro web.</p>
+        </div>
+
+        <!-- Meetings calendar -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <h3 id="calendarMonthLabel">—</h3>
+            <div class="calendar-nav">
+              <button class="filter-btn" id="calPrevBtn">‹</button>
+              <button class="filter-btn" id="calTodayBtn">Dnes</button>
+              <button class="filter-btn" id="calNextBtn">›</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="calendar-grid" id="calendarGrid">
+              <!-- Filled by JS -->
+            </div>
+            <div class="calendar-day-detail" id="calendarDayDetail">
+              <!-- Filled by JS -->
+            </div>
+          </div>
         </div>
 
         <!-- Quick add form -->
@@ -381,10 +389,15 @@
 
     <!-- Materials -->
     <div class="panel-section">
-      <div class="panel-section-title">Materiály</div>
+      <div class="panel-section-title">Materiály a soubory</div>
       <div class="materials-list" id="materialsList">
         <!-- Filled by JS -->
       </div>
+      <label class="file-upload-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span id="fileUploadLabel">Nahrát soubor</span>
+        <input type="file" id="fileUploadInput" hidden>
+      </label>
     </div>
   </div>
 </div>
