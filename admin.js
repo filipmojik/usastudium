@@ -525,6 +525,16 @@ function formatSlotDate(dateStr) {
   return `${dayNames[dateObj.getDay()]} ${dateObj.getDate()}. ${monthNames[dateObj.getMonth()]}`;
 }
 
+// Convert Czech time (HH:MM) to user's local time (−7h from CZ)
+const USER_OFFSET_HOURS = -7;
+function czToLocal(czTime) {
+  const [h, m] = czTime.split(':').map(Number);
+  let localH = h + USER_OFFSET_HOURS;
+  if (localH < 0) localH += 24;
+  if (localH >= 24) localH -= 24;
+  return `${String(localH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 function renderTimeSlots() {
   const container = document.getElementById('timeSlotsContainer');
   if (!container) return;
@@ -549,7 +559,7 @@ function renderTimeSlots() {
     row.innerHTML = `
       <div class="time-slot-day">${formatSlotDate(dateStr)}</div>
       <div class="time-slot-times">
-        ${times.map(t => `<span class="time-chip" onclick="removeTimeSlot('${dateStr}', '${t}')" title="Smazat">${t} <small>×</small></span>`).join('')}
+        ${times.map(t => `<span class="time-chip" onclick="removeTimeSlot('${dateStr}', '${t}')" title="Smazat – ČR ${t} / u tebe ${czToLocal(t)}">${t} <small class="tc-local">(${czToLocal(t)})</small> <small>×</small></span>`).join('')}
       </div>
     `;
     container.appendChild(row);
@@ -582,8 +592,20 @@ document.addEventListener('DOMContentLoaded', () => {
   newSlotDate.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   newSlotDate.min = newSlotDate.value;
 
-  // Quick-pick time toggling
+  // Generate 30-minute interval quick-picks (09:00 – 20:30 Czech time)
   if (quickpicks) {
+    const slots = [];
+    for (let h = 9; h <= 20; h++) {
+      slots.push(`${String(h).padStart(2, '0')}:00`);
+      slots.push(`${String(h).padStart(2, '0')}:30`);
+    }
+    quickpicks.innerHTML = slots.map(t =>
+      `<button type="button" class="time-pick" data-time="${t}" title="ČR ${t} / u tebe ${czToLocal(t)}">
+        <span class="tp-cz">${t}</span>
+        <span class="tp-local">${czToLocal(t)}</span>
+      </button>`
+    ).join('');
+
     quickpicks.querySelectorAll('.time-pick').forEach(btn => {
       btn.addEventListener('click', () => {
         const t = btn.dataset.time;
@@ -596,6 +618,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     });
+  }
+
+  // Live-convert custom time input
+  const customHint = document.getElementById('newSlotCustomHint');
+  if (newSlotCustomTime && customHint) {
+    const updateHint = () => {
+      const v = newSlotCustomTime.value;
+      customHint.textContent = v ? `ČR ${v} → u tebe ${czToLocal(v)}` : '';
+    };
+    newSlotCustomTime.addEventListener('input', updateHint);
   }
 
   const showFeedback = (msg, isError = false) => {

@@ -240,23 +240,15 @@
                 <input type="date" id="newSlotDate">
               </div>
               <div class="slot-add-field">
-                <label>Časy (klikni na jeden nebo více)</label>
+                <label>Časy (klikni na jeden nebo více) — <span style="color:var(--brand);font-weight:500;">ČR / u tebe (−7h)</span></label>
                 <div class="slot-time-quickpicks" id="slotTimeQuickpicks">
-                  <button type="button" class="time-pick" data-time="09:00">09:00</button>
-                  <button type="button" class="time-pick" data-time="10:00">10:00</button>
-                  <button type="button" class="time-pick" data-time="11:00">11:00</button>
-                  <button type="button" class="time-pick" data-time="14:00">14:00</button>
-                  <button type="button" class="time-pick" data-time="15:00">15:00</button>
-                  <button type="button" class="time-pick" data-time="16:00">16:00</button>
-                  <button type="button" class="time-pick" data-time="17:00">17:00</button>
-                  <button type="button" class="time-pick" data-time="18:00">18:00</button>
-                  <button type="button" class="time-pick" data-time="19:00">19:00</button>
-                  <button type="button" class="time-pick" data-time="20:00">20:00</button>
+                  <!-- Filled by JS: 30-min intervals with CZ + local time -->
                 </div>
               </div>
               <div class="slot-add-field">
-                <label for="newSlotCustomTime">Vlastní čas (volitelné)</label>
-                <input type="time" id="newSlotCustomTime">
+                <label for="newSlotCustomTime">Vlastní čas (volitelné, v českém čase)</label>
+                <input type="time" id="newSlotCustomTime" step="1800">
+                <span id="newSlotCustomHint" class="time-convert-hint"></span>
               </div>
               <div class="slot-add-actions">
                 <button class="btn-primary" id="saveNewSlotBtn">Přidat vybrané termíny</button>

@@ -443,15 +443,24 @@
               </div>
             </div>
             
+            <div class="form-consent">
+              <label class="consent-check">
+                <input type="checkbox" id="gdprConsent" name="gdprConsent" required>
+                <span data-cz="Souhlasím se <a href='pravni.html#gdpr' target='_blank' rel='noopener'>zpracováním osobních údajů</a> pro účely vyřízení rezervace a seznámil/a jsem se s <a href='pravni.html#podminky' target='_blank' rel='noopener'>obchodními podmínkami</a>." data-en="I agree with the <a href='pravni.html#gdpr' target='_blank' rel='noopener'>processing of my personal data</a> for the purpose of handling this booking and I've read the <a href='pravni.html#podminky' target='_blank' rel='noopener'>terms of service</a>.">
+                  Souhlasím se <a href="pravni.html#gdpr" target="_blank" rel="noopener">zpracováním osobních údajů</a> pro účely vyřízení rezervace a seznámil/a jsem se s <a href="pravni.html#podminky" target="_blank" rel="noopener">obchodními podmínkami</a>.
+                </span>
+              </label>
+            </div>
+
             <div class="form-submit">
               <button type="submit" class="btn-primary" id="submitBtn" data-cz="Rezervovat schůzku<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z'/></svg>" data-en="Book consultation<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z'/></svg>">
                 Rezervovat schůzku
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
               </button>
             </div>
-            
-            <p class="form-note" data-cz="Tvoje údaje nikam neposílám. Slouží jen pro naši komunikaci." data-en="I don't share your data anywhere. It's strictly for our communication.">
-              Tvoje údaje nikam neposílám. Slouží jen pro naši komunikaci.
+
+            <p class="form-note" data-cz="Tvoje údaje zpracovávám pouze pro naši komunikaci. Podrobnosti v <a href='pravni.html#gdpr'>Ochraně osobních údajů</a>." data-en="I only process your data for our communication. Details in the <a href='pravni.html#gdpr'>Privacy Policy</a>.">
+              Tvoje údaje zpracovávám pouze pro naši komunikaci. Podrobnosti v <a href="pravni.html#gdpr">Ochraně osobních údajů</a>.
             </p>
           </form>
           
@@ -482,10 +491,34 @@
         <li><a href="#contact" data-cz="Kontakt" data-en="Contact">Kontakt</a></li>
         <li><a href="https://www.linkedin.com/in/veronika-mojik" target="_blank" rel="noopener noreferrer" data-cz="LinkedIn" data-en="LinkedIn">LinkedIn</a></li>
       </ul>
-      
-      <p class="footer-copy" data-cz="© 2025 Veronika Mojiková. Vytvořeno v Texasu." data-en="© 2025 Veronika Mojiková. Made in Texas.">© 2025 Veronika Mojiková. Vytvořeno v Texasu.</p>
+
+      <ul class="footer-legal">
+        <li><a href="pravni.html#podminky" data-cz="Obchodní podmínky" data-en="Terms of service">Obchodní podmínky</a></li>
+        <li><a href="pravni.html#gdpr" data-cz="Ochrana osobních údajů" data-en="Privacy policy">Ochrana osobních údajů</a></li>
+        <li><a href="pravni.html#cookies" data-cz="Cookies" data-en="Cookies">Cookies</a></li>
+        <li><a href="#" id="cookieSettingsLink" data-cz="Nastavení cookies" data-en="Cookie settings">Nastavení cookies</a></li>
+      </ul>
+
+      <p class="footer-copy" data-cz="© 2026 Veronika Mojiková. Vytvořeno v Texasu." data-en="© 2026 Veronika Mojiková. Made in Texas.">© 2026 Veronika Mojiková. Vytvořeno v Texasu.</p>
     </div>
   </footer>
+
+  <!-- ===== COOKIES CONSENT BANNER ===== -->
+  <div class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Souhlas s cookies" aria-live="polite" hidden>
+    <div class="cookie-banner-inner">
+      <div class="cookie-banner-text">
+        <h4 data-cz="🍪 Používáme cookies" data-en="🍪 We use cookies">🍪 Používáme cookies</h4>
+        <p data-cz="Tento web používá nezbytné cookies pro správnou funkci. Pro analytiku a zlepšování webu rádi využijeme volitelné cookies – pouze s tvým souhlasem. Více v <a href='pravni.html#cookies'>Zásadách cookies</a>." data-en="This site uses necessary cookies to function. With your consent we'd also like to use optional cookies for analytics. Read our <a href='pravni.html#cookies'>Cookie policy</a>.">
+          Tento web používá nezbytné cookies pro správnou funkci. Pro analytiku a zlepšování webu rádi využijeme volitelné cookies – pouze s tvým souhlasem. Více v <a href="pravni.html#cookies">Zásadách cookies</a>.
+        </p>
+      </div>
+      <div class="cookie-banner-actions">
+        <button type="button" class="cookie-btn cookie-btn-reject" id="cookieReject" data-cz="Odmítnout vše" data-en="Reject all">Odmítnout vše</button>
+        <button type="button" class="cookie-btn cookie-btn-necessary" id="cookieNecessary" data-cz="Jen nezbytné" data-en="Necessary only">Jen nezbytné</button>
+        <button type="button" class="cookie-btn cookie-btn-accept" id="cookieAccept" data-cz="Přijmout vše" data-en="Accept all">Přijmout vše</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
