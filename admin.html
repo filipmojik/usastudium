@@ -217,21 +217,54 @@
       <div class="view" id="view-calendar">
         <div class="view-header">
           <h2>Správa dostupných hodin</h2>
+          <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">Termíny, které tu přidáš, se okamžitě zobrazí na webu ve formuláři.</p>
         </div>
 
-        <!-- Time slots manager -->
+        <!-- Quick add form -->
         <div class="card">
           <div class="card-header">
-            <h3>Dostupné termíny</h3>
-            <span class="card-header-action" id="addSlotBtn">+ Přidat termín</span>
+            <h3>Přidat nový termín</h3>
           </div>
           <div class="card-body">
-            <div id="addSlotUI" style="display:none; background:#f4f5f7; padding:15px; border-radius:8px; margin-bottom:15px; gap:10px; flex-wrap:wrap; align-items:center;">
-              <input type="date" id="newSlotDate" style="padding:8px; border:1px solid var(--border); border-radius:4px;">
-              <input type="time" id="newSlotTime" style="padding:8px; border:1px solid var(--border); border-radius:4px;">
-              <button class="btn-primary" id="saveNewSlotBtn" style="padding:8px 15px;">Přidat</button>
-              <button class="filter-btn" id="cancelNewSlotBtn">Zrušit</button>
+            <div class="slot-add-form">
+              <div class="slot-add-field">
+                <label for="newSlotDate">Datum</label>
+                <input type="date" id="newSlotDate">
+              </div>
+              <div class="slot-add-field">
+                <label>Časy (klikni na jeden nebo více)</label>
+                <div class="slot-time-quickpicks" id="slotTimeQuickpicks">
+                  <button type="button" class="time-pick" data-time="09:00">09:00</button>
+                  <button type="button" class="time-pick" data-time="10:00">10:00</button>
+                  <button type="button" class="time-pick" data-time="11:00">11:00</button>
+                  <button type="button" class="time-pick" data-time="14:00">14:00</button>
+                  <button type="button" class="time-pick" data-time="15:00">15:00</button>
+                  <button type="button" class="time-pick" data-time="16:00">16:00</button>
+                  <button type="button" class="time-pick" data-time="17:00">17:00</button>
+                  <button type="button" class="time-pick" data-time="18:00">18:00</button>
+                  <button type="button" class="time-pick" data-time="19:00">19:00</button>
+                  <button type="button" class="time-pick" data-time="20:00">20:00</button>
+                </div>
+              </div>
+              <div class="slot-add-field">
+                <label for="newSlotCustomTime">Vlastní čas (volitelné)</label>
+                <input type="time" id="newSlotCustomTime">
+              </div>
+              <div class="slot-add-actions">
+                <button class="btn-primary" id="saveNewSlotBtn">Přidat vybrané termíny</button>
+                <span class="slot-add-feedback" id="slotAddFeedback"></span>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Existing slots list -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Aktivní termíny</h3>
+            <span style="color:var(--text-muted);font-size:0.85rem;">Klikni na čas pro smazání</span>
+          </div>
+          <div class="card-body">
             <div id="timeSlotsContainer">
               <!-- Filled by JS -->
             </div>

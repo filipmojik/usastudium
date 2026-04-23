@@ -141,7 +141,11 @@ async function fetchSettings() {
 
 async function saveSettings() {
   if (!db) return;
-  await db.from('settings').upsert({ id: 1, available_slots: availableSlots });
+  const { error } = await db.from('settings').upsert({ id: 1, available_slots: availableSlots });
+  if (error) {
+    console.error('Error saving settings:', error);
+    throw error;
+  }
 }
 
 // ===== STATE =====
@@ -400,84 +404,127 @@ function formatSlotDate(dateStr) {
 
 function renderTimeSlots() {
   const container = document.getElementById('timeSlotsContainer');
+  if (!container) return;
   container.innerHTML = '';
-  
-  // Sort dates
+
   const sortedDates = Object.keys(availableSlots).sort();
 
-  sortedDates.forEach(dateStr => {
-    const times = availableSlots[dateStr];
-    if (times.length === 0) return; // Ukazujeme jen dny "s" časy
-    
+  // Filter out past dates
+  const todayStr = new Date().toISOString().split('T')[0];
+  const upcomingDates = sortedDates.filter(d => d >= todayStr && availableSlots[d].length > 0);
+
+  if (upcomingDates.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>Zatím žádné aktivní termíny. Přidej nový termín výše.</p></div>';
+    return;
+  }
+
+  upcomingDates.forEach(dateStr => {
+    const times = [...availableSlots[dateStr]].sort();
+
     const row = document.createElement('div');
     row.className = 'time-slot-row';
     row.innerHTML = `
       <div class="time-slot-day">${formatSlotDate(dateStr)}</div>
       <div class="time-slot-times">
-        ${times.map(t => `<span class="time-chip" onclick="removeTimeSlot('${dateStr}', '${t}')" title="Smazat">${t} <small style="opacity:0.5; margin-left:5px">×</small></span>`).join('')}
+        ${times.map(t => `<span class="time-chip" onclick="removeTimeSlot('${dateStr}', '${t}')" title="Smazat">${t} <small>×</small></span>`).join('')}
       </div>
     `;
     container.appendChild(row);
   });
 }
 
-window.removeTimeSlot = function(day, time) {
+window.removeTimeSlot = async function(day, time) {
   availableSlots[day] = availableSlots[day].filter(t => t !== time);
   if (availableSlots[day].length === 0) {
     delete availableSlots[day];
   }
   renderTimeSlots();
-  saveSettings();
+  await saveSettings();
 };
 
-// UI for adding exact date & time
+// ===== NEW SLOT ADD UI =====
+let selectedQuickTimes = new Set();
+
 document.addEventListener('DOMContentLoaded', () => {
-  const addSlotBtn = document.getElementById('addSlotBtn');
-  const addSlotUI = document.getElementById('addSlotUI');
-  const cancelNewSlotBtn = document.getElementById('cancelNewSlotBtn');
-  const saveNewSlotBtn = document.getElementById('saveNewSlotBtn');
   const newSlotDate = document.getElementById('newSlotDate');
-  const newSlotTime = document.getElementById('newSlotTime');
+  const newSlotCustomTime = document.getElementById('newSlotCustomTime');
+  const quickpicks = document.getElementById('slotTimeQuickpicks');
+  const saveNewSlotBtn = document.getElementById('saveNewSlotBtn');
+  const feedback = document.getElementById('slotAddFeedback');
 
-  if(addSlotBtn) {
-    addSlotBtn.addEventListener('click', () => {
-      addSlotUI.style.display = 'flex';
-      // Předvyplnit dnešní datum
-      const d = new Date();
-      newSlotDate.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  if (!newSlotDate || !saveNewSlotBtn) return;
+
+  // Prefill today's date
+  const today = new Date();
+  newSlotDate.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  newSlotDate.min = newSlotDate.value;
+
+  // Quick-pick time toggling
+  if (quickpicks) {
+    quickpicks.querySelectorAll('.time-pick').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.time;
+        if (selectedQuickTimes.has(t)) {
+          selectedQuickTimes.delete(t);
+          btn.classList.remove('selected');
+        } else {
+          selectedQuickTimes.add(t);
+          btn.classList.add('selected');
+        }
+      });
     });
   }
 
-  if(cancelNewSlotBtn) {
-    cancelNewSlotBtn.addEventListener('click', () => {
-      addSlotUI.style.display = 'none';
-    });
-  }
+  const showFeedback = (msg, isError = false) => {
+    feedback.textContent = msg;
+    feedback.className = 'slot-add-feedback ' + (isError ? 'error' : 'success');
+    setTimeout(() => { feedback.textContent = ''; feedback.className = 'slot-add-feedback'; }, 3500);
+  };
 
-  if(saveNewSlotBtn) {
-    saveNewSlotBtn.addEventListener('click', () => {
-      const dateVal = newSlotDate.value;
-      const timeVal = newSlotTime.value;
-      if (!dateVal || !timeVal) {
-        alert('Vyber prosím datum i čas.');
-        return;
+  saveNewSlotBtn.addEventListener('click', async () => {
+    const dateVal = newSlotDate.value;
+    const customTime = newSlotCustomTime.value;
+    const times = new Set(selectedQuickTimes);
+    if (customTime) times.add(customTime);
+
+    if (!dateVal) {
+      showFeedback('Vyber datum.', true);
+      return;
+    }
+    if (times.size === 0) {
+      showFeedback('Vyber alespoň jeden čas.', true);
+      return;
+    }
+
+    if (!availableSlots[dateVal]) availableSlots[dateVal] = [];
+    let added = 0;
+    times.forEach(t => {
+      if (!availableSlots[dateVal].includes(t)) {
+        availableSlots[dateVal].push(t);
+        added++;
       }
-      
-      if (!availableSlots[dateVal]) {
-        availableSlots[dateVal] = [];
-      }
-      if (!availableSlots[dateVal].includes(timeVal)) {
-        availableSlots[dateVal].push(timeVal);
-        availableSlots[dateVal].sort();
-      }
-      
-      addSlotUI.style.display = 'none';
-      newSlotTime.value = '';
-      
+    });
+    availableSlots[dateVal].sort();
+
+    saveNewSlotBtn.disabled = true;
+    saveNewSlotBtn.textContent = 'Ukládám...';
+    try {
+      await saveSettings();
+      showFeedback(added > 0 ? `Přidáno ${added} termínů.` : 'Termíny už existují.');
+
+      // Reset selection
+      selectedQuickTimes.clear();
+      quickpicks.querySelectorAll('.time-pick').forEach(b => b.classList.remove('selected'));
+      newSlotCustomTime.value = '';
       renderTimeSlots();
-      saveSettings();
-    });
-  }
+    } catch (err) {
+      console.error(err);
+      showFeedback('Chyba při ukládání.', true);
+    } finally {
+      saveNewSlotBtn.disabled = false;
+      saveNewSlotBtn.textContent = 'Přidat vybrané termíny';
+    }
+  });
 });
 
 // ===== CLIENT PANEL =====

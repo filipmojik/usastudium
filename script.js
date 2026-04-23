@@ -65,121 +65,142 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // === Generate appointment date options (2 days ahead, next 14 days) ===
-  const dateSelect = document.getElementById('appointmentDate');
-  
-  const generateDates = (lang) => {
-    if (!dateSelect) return;
-    
-    // Preserve the first disabled placeholder option if it exists
-    const firstOption = dateSelect.querySelector('option[disabled]');
-    dateSelect.innerHTML = '';
-    if (firstOption) {
-      dateSelect.appendChild(firstOption);
-    }
-    
-    const today = new Date();
-    const dayNamesCZ = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
-    const monthNamesCZ = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
-    
-    const dayNamesEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const monthNamesEN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    for (let i = 2; i <= 15; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      const dayName = lang === 'cz' ? dayNamesCZ[date.getDay()] : dayNamesEN[date.getDay()];
-      const day = date.getDate();
-      const month = lang === 'cz' ? monthNamesCZ[date.getMonth()] : monthNamesEN[date.getMonth()];
-      
-      const option = document.createElement('option');
-      const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-      option.value = dateStr;
-      
-      if (lang === 'cz') {
-        option.textContent = `${dayName} ${day}. ${month}`;
-      } else {
-        option.textContent = `${dayName}, ${month} ${day}`;
-      }
-      
-      dateSelect.appendChild(option);
-    }
-  };
-  
+  // === Appointment slot picker ===
   let availableSlotsFront = {};
+  let selectedDate = null;
+  let selectedTime = null;
+  let currentLang = 'cz';
 
-  const timeSelect = document.getElementById('appointmentTime');
-  const dateSelect = document.getElementById('appointmentDate');
+  const datePicker = document.getElementById('datePicker');
+  const timePicker = document.getElementById('timePicker');
+  const timePickerGroup = document.getElementById('timePickerGroup');
+  const dateHiddenInput = document.getElementById('appointmentDate');
+  const timeHiddenInput = document.getElementById('appointmentTime');
 
-  function updateTimeOptions() {
-    if (!dateSelect || !timeSelect) return;
-    const selectedDateStr = dateSelect.value;
-    if (!selectedDateStr) return;
-    
-    const slots = availableSlotsFront[selectedDateStr] || [];
-    
-    // Uchování placeholderu
-    const firstOption = timeSelect.querySelector('option[disabled]');
-    timeSelect.innerHTML = '';
-    if (firstOption) timeSelect.appendChild(firstOption);
-    
-    slots.forEach(time => {
-      const option = document.createElement('option');
-      option.value = time;
-      option.textContent = time;
-      timeSelect.appendChild(option);
+  const dayNamesCZ = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+  const monthNamesCZ = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
+  const dayNamesEN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthNamesEN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dayNamesCZShort = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
+
+  function renderDatePicker(lang) {
+    if (!datePicker) return;
+    datePicker.innerHTML = '';
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const sortedDates = Object.keys(availableSlotsFront)
+      .filter(d => d >= todayStr && availableSlotsFront[d].length > 0)
+      .sort();
+
+    if (sortedDates.length === 0) {
+      const emptyMsg = lang === 'cz'
+        ? 'Momentálně nejsou volné termíny. Napiš mi e-mail a domluvíme se individuálně.'
+        : 'No available dates right now. Email me and we can arrange something.';
+      datePicker.innerHTML = `<div class="slot-picker-empty">${emptyMsg}</div>`;
+      timePickerGroup.style.display = 'none';
+      dateHiddenInput.value = '';
+      timeHiddenInput.value = '';
+      return;
+    }
+
+    sortedDates.forEach(dateStr => {
+      const dateObj = new Date(dateStr + 'T00:00:00');
+      const dayShort = lang === 'cz' ? dayNamesCZShort[dateObj.getDay()] : dayNamesEN[dateObj.getDay()];
+      const day = dateObj.getDate();
+      const month = lang === 'cz' ? monthNamesCZ[dateObj.getMonth()] : monthNamesEN[dateObj.getMonth()];
+
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'slot-date-card';
+      if (dateStr === selectedDate) card.classList.add('selected');
+      card.dataset.date = dateStr;
+      card.innerHTML = `
+        <span class="slot-date-weekday">${dayShort}</span>
+        <span class="slot-date-day">${day}</span>
+        <span class="slot-date-month">${month}</span>
+      `;
+      card.addEventListener('click', () => {
+        selectedDate = dateStr;
+        selectedTime = null;
+        dateHiddenInput.value = dateStr;
+        timeHiddenInput.value = '';
+        renderDatePicker(currentLang);
+        renderTimePicker();
+      });
+      datePicker.appendChild(card);
+    });
+
+    // If previously selected date no longer exists, reset
+    if (selectedDate && !sortedDates.includes(selectedDate)) {
+      selectedDate = null;
+      selectedTime = null;
+      dateHiddenInput.value = '';
+      timeHiddenInput.value = '';
+      timePickerGroup.style.display = 'none';
+    }
+  }
+
+  function renderTimePicker() {
+    if (!timePicker || !timePickerGroup) return;
+
+    if (!selectedDate || !availableSlotsFront[selectedDate] || availableSlotsFront[selectedDate].length === 0) {
+      timePickerGroup.style.display = 'none';
+      return;
+    }
+
+    timePickerGroup.style.display = '';
+    timePicker.innerHTML = '';
+
+    [...availableSlotsFront[selectedDate]].sort().forEach(time => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'slot-time-chip';
+      if (time === selectedTime) chip.classList.add('selected');
+      chip.textContent = time;
+      chip.addEventListener('click', () => {
+        selectedTime = time;
+        timeHiddenInput.value = time;
+        timePicker.querySelectorAll('.slot-time-chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+      });
+      timePicker.appendChild(chip);
     });
   }
 
   function renderFrontendDates(lang) {
-    if (!dateSelect) return;
-    const firstOption = dateSelect.querySelector('option[disabled]');
-    dateSelect.innerHTML = '';
-    if (firstOption) dateSelect.appendChild(firstOption);
-
-    const sortedDates = Object.keys(availableSlotsFront).sort();
-    
-    const dayNamesCZ = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
-    const monthNamesCZ = ['ledna', 'února', 'března', 'dubna', 'května', 'června', 'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
-    const dayNamesEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const monthNamesEN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    sortedDates.forEach(dateStr => {
-      if (availableSlotsFront[dateStr].length === 0) return; // Nedávat tam dny bez hodin
-
-      const dateObj = new Date(dateStr);
-      const dayName = lang === 'cz' ? dayNamesCZ[dateObj.getDay()] : dayNamesEN[dateObj.getDay()];
-      const day = dateObj.getDate();
-      const month = lang === 'cz' ? monthNamesCZ[dateObj.getMonth()] : monthNamesEN[dateObj.getMonth()];
-
-      const option = document.createElement('option');
-      option.value = dateStr;
-      
-      if (lang === 'cz') {
-        option.textContent = `${dayName} ${day}. ${month}`;
-      } else {
-        option.textContent = `${dayName}, ${month} ${day}`;
-      }
-      
-      dateSelect.appendChild(option);
-    });
-  }
-
-  if (dateSelect) {
-    dateSelect.addEventListener('change', updateTimeOptions);
+    renderDatePicker(lang);
+    renderTimePicker();
   }
 
   async function fetchSettingsFront() {
     if (!db) return;
-    const { data: set, error: setErr } = await db.from('settings').select('available_slots').eq('id', 1).single();
+    const { data: set } = await db.from('settings').select('available_slots').eq('id', 1).single();
     if (set && set.available_slots) {
       availableSlotsFront = set.available_slots;
     }
   }
 
   fetchSettingsFront().then(() => {
-    renderFrontendDates('cz'); // Build dates from dictionary
+    renderFrontendDates('cz');
+  });
+
+  // Real-time sync: listen for changes in settings table
+  if (db) {
+    db.channel('settings-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, (payload) => {
+        if (payload.new && payload.new.available_slots) {
+          availableSlotsFront = payload.new.available_slots;
+          renderFrontendDates(currentLang);
+        }
+      })
+      .subscribe();
+  }
+
+  // Fallback: refetch slots when user returns to tab
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      fetchSettingsFront().then(() => renderFrontendDates(currentLang));
+    }
   });
 
   // === Form handling ===
@@ -189,12 +210,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const submitBtn = document.getElementById('submitBtn');
       const originalText = submitBtn.innerHTML;
+
+      // Validate slot selection (hidden inputs aren't validated natively)
+      if (!dateHiddenInput.value || !timeHiddenInput.value) {
+        const msg = currentLang === 'cz'
+          ? 'Prosím vyber datum i čas schůzky.'
+          : 'Please select both a date and a time.';
+        alert(msg);
+        return;
+      }
+
       submitBtn.textContent = 'Odesílám...';
       submitBtn.disabled = true;
-      
+
       // Collect form data
       const formData = new FormData(contactForm);
       const data = {};
@@ -242,9 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // === Language Switcher ===
   const langBtns = document.querySelectorAll('.lang-btn');
   const translatableElements = document.querySelectorAll('[data-cz][data-en]');
-  
-  // Set initial language based on button state (Defaults to CZ)
-  let currentLang = 'cz';
 
   langBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -267,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         // Update dates in dropdown
-        generateDates(currentLang);
+        renderFrontendDates(currentLang);
       }
     });
   });

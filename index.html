@@ -353,7 +353,22 @@
       <div class="contact-inner">
         <div class="contact-info">
           <p class="about-label" data-cz="Co potřebuješ vědět" data-en="What you need to know">Co potřebuješ vědět</p>
-          
+
+          <div class="contact-direct">
+            <a href="mailto:vmusastudium@gmail.com" class="contact-direct-item">
+              <div class="contact-direct-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div>
+                <span class="contact-direct-label" data-cz="E-mail (nejrychlejší cesta ke mně)" data-en="Email (fastest way to reach me)">E-mail (nejrychlejší cesta ke mně)</span>
+                <span class="contact-direct-value">vmusastudium@gmail.com</span>
+              </div>
+            </a>
+            <div class="contact-direct-note" data-cz="Žiji v USA, takže primárně komunikuji přes e-mail — zpravidla odpovím do 24 hodin. Mám americké telefonní číslo, ale e-mail je vždy spolehlivější." data-en="I live in the USA, so I primarily communicate via email — I usually reply within 24 hours. I have a US phone number, but email is always more reliable.">
+              Žiji v USA, takže primárně komunikuji přes e-mail — zpravidla odpovím do 24 hodin. Mám americké telefonní číslo, ale e-mail je vždy spolehlivější.
+            </div>
+          </div>
+
           <div class="contact-info-item">
             <div class="contact-info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <div>
@@ -361,7 +376,7 @@
               <p data-cz="Zavoláme si přes Zoom nebo Google Meet. Krátce, konkrétně, k věci." data-en="We'll hop on Zoom or Google Meet. Short, specific, to the point.">Zavoláme si přes Zoom nebo Google Meet. Krátce, konkrétně, k věci.</p>
             </div>
           </div>
-          
+
           <div class="contact-info-item">
             <div class="contact-info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
             <div>
@@ -369,7 +384,7 @@
               <p data-cz="Úvodní konzultace je zadarmo. Zjistíme, jestli ti můžu pomoct, a případně se domluvíme dál." data-en="The intro call is free. We'll figure out if I can help and go from there.">Úvodní konzultace je zadarmo. Zjistíme, jestli ti můžu pomoct, a případně se domluvíme dál.</p>
             </div>
           </div>
-          
+
           <div class="contact-info-item">
             <div class="contact-info-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
             <div>
@@ -416,23 +431,18 @@
                 <textarea id="goal" name="goal" placeholder="Napiš mi pár vět – kam bys chtěl/a studovat, jaký obor, co od konzultace očekáváš..." data-cz-ph="Napiš mi pár vět – kam bys chtěl/a studovat, jaký obor..." data-en-ph="Tell me in a few words – where you want to study, which major..." required></textarea>
               </div>
               
-              <div class="form-group">
-                <label for="appointmentDate" data-cz="Vyber den *" data-en="Select date *">Vyber den *</label>
-                <select id="appointmentDate" name="appointmentDate" required>
-                  <option value="" disabled selected data-cz="Vyber datum" data-en="Choose date">Vyber datum</option>
-                </select>
+              <div class="form-group full-width">
+                <label data-cz="Vyber den *" data-en="Select date *">Vyber den *</label>
+                <div class="slot-picker" id="datePicker">
+                  <div class="slot-picker-empty" data-cz="Načítám dostupné termíny..." data-en="Loading available dates...">Načítám dostupné termíny...</div>
+                </div>
+                <input type="hidden" id="appointmentDate" name="appointmentDate" required>
               </div>
-              
-              <div class="form-group">
-                <label for="appointmentTime" data-cz="Vyber čas *" data-en="Select time *">Vyber čas *</label>
-                <select id="appointmentTime" name="appointmentTime" required>
-                  <option value="" disabled selected data-cz="Vyber čas" data-en="Choose time">Vyber čas</option>
-                  <option value="15:00">15:00</option>
-                  <option value="16:00">16:00</option>
-                  <option value="17:00">17:00</option>
-                  <option value="18:00">18:00</option>
-                  <option value="19:00">19:00</option>
-                </select>
+
+              <div class="form-group full-width" id="timePickerGroup" style="display:none;">
+                <label data-cz="Vyber čas *" data-en="Select time *">Vyber čas *</label>
+                <div class="slot-picker slot-picker-times" id="timePicker"></div>
+                <input type="hidden" id="appointmentTime" name="appointmentTime" required>
               </div>
             </div>
             
@@ -451,7 +461,7 @@
           <div class="form-success" id="formSuccess">
             <div class="form-success-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--maroon)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
             <h3 data-cz="Děkuju! Schůzka zarezervována." data-en="Thank you! Call booked.">Děkuju! Schůzka zarezervována.</h3>
-            <p data-cz="Budu ho kontaktovat do 24h s pozvánkou na hovor." data-en="I will contact them within 24h with a call invitation.">Budu ho kontaktovat do 24h s pozvánkou na hovor.</p>
+            <p data-cz="Ozvu se ti do 24 hodin na e-mail s pozvánkou na hovor." data-en="I'll get back to you within 24 hours via email with a call invitation.">Ozvu se ti do 24 hodin na e-mail s pozvánkou na hovor.</p>
           </div>
         </div>
       </div>

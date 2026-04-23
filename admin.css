@@ -770,14 +770,23 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 
 .time-chip {
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 500;
+  font-size: 0.82rem;
+  font-weight: 600;
   background: var(--success-bg);
   color: var(--success);
   cursor: pointer;
   transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.time-chip small {
+  opacity: 0.5;
+  font-size: 0.9em;
+  font-weight: 400;
 }
 
 .time-chip:hover {
@@ -785,11 +794,96 @@ input, select, textarea { font-family: inherit; font-size: inherit; }
   color: var(--danger);
 }
 
+.time-chip:hover small { opacity: 1; }
+
 .time-chip.add {
   background: var(--brand-lighter);
   color: var(--brand);
   border: 1px dashed var(--brand);
 }
+
+/* Slot add form */
+.slot-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.slot-add-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slot-add-field label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.slot-add-field input[type="date"],
+.slot-add-field input[type="time"] {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  background: var(--white);
+  transition: all var(--transition);
+  max-width: 280px;
+}
+
+.slot-add-field input[type="date"]:focus,
+.slot-add-field input[type="time"]:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-bg);
+}
+
+.slot-time-quickpicks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.time-pick {
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  background: var(--white);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all var(--transition);
+}
+
+.time-pick:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.time-pick.selected {
+  background: var(--brand);
+  color: var(--white);
+  border-color: var(--brand);
+}
+
+.slot-add-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+.slot-add-feedback {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.slot-add-feedback.success { color: var(--success); }
+.slot-add-feedback.error { color: var(--danger); }
 
 /* ===== Client Slide-out Panel ===== */
 .client-panel-overlay {

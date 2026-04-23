@@ -134,17 +134,17 @@ h1, h2, h3, h4 {
   left: 0;
   right: 0;
   z-index: 1000;
-  padding: var(--space-lg) 0;
+  padding: var(--space-md) 0;
   transition: all var(--transition-normal);
-  background: transparent;
+  background: rgba(255, 248, 240, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 1px 0 rgba(36, 21, 113, 0.06);
 }
 
 .nav.scrolled {
-  background: rgba(255, 248, 240, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 248, 240, 0.98);
   box-shadow: var(--shadow-sm);
-  padding: var(--space-md) 0;
 }
 
 .nav-inner {
@@ -1127,6 +1127,75 @@ h1, h2, h3, h4 {
   line-height: 1.6;
 }
 
+/* Direct contact (email + note) */
+.contact-direct {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.contact-direct-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  padding: var(--space-sm) 0;
+  transition: transform var(--transition-fast);
+}
+
+.contact-direct-item:hover {
+  transform: translateX(2px);
+  color: var(--text-primary);
+}
+
+.contact-direct-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  background: var(--maroon);
+  color: var(--white);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.contact-direct-item:hover .contact-direct-icon {
+  background: var(--maroon-dark);
+}
+
+.contact-direct-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.contact-direct-value {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--maroon);
+  word-break: break-all;
+}
+
+.contact-direct-note {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--gray-200);
+}
+
 /* LinkedIn CTA - prominent handwritten link */
 .linkedin-cta {
   display: inline-flex;
@@ -1244,6 +1313,115 @@ h1, h2, h3, h4 {
 .form-group textarea {
   resize: vertical;
   min-height: 120px;
+}
+
+/* Slot picker (date + time chips) */
+.slot-picker {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-x: auto;
+  padding: var(--space-sm) 2px var(--space-md);
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-300) transparent;
+}
+
+.slot-picker::-webkit-scrollbar {
+  height: 6px;
+}
+.slot-picker::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+.slot-picker-times {
+  flex-wrap: wrap;
+  overflow-x: visible;
+}
+
+.slot-date-card {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  padding: var(--space-md) var(--space-sm);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-body);
+}
+
+.slot-date-card:hover {
+  border-color: var(--maroon);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.slot-date-card.selected {
+  background: var(--maroon);
+  border-color: var(--maroon);
+  color: var(--white);
+  box-shadow: var(--shadow-maroon);
+}
+
+.slot-date-weekday {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.slot-date-day {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.85rem;
+  line-height: 1;
+  margin: 2px 0;
+}
+
+.slot-date-month {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  text-transform: lowercase;
+}
+
+.slot-time-chip {
+  padding: 10px 18px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  background: var(--white);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.slot-time-chip:hover {
+  border-color: var(--maroon);
+  color: var(--maroon);
+}
+
+.slot-time-chip.selected {
+  background: var(--maroon);
+  border-color: var(--maroon);
+  color: var(--white);
+}
+
+.slot-picker-empty {
+  width: 100%;
+  padding: var(--space-lg);
+  background: var(--gray-100);
+  border: 1px dashed var(--gray-300);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  text-align: center;
 }
 
 .form-submit {
@@ -1524,7 +1702,7 @@ h1, h2, h3, h4 {
   .about-label { order: 1; }
   .about-text { order: 2; margin-bottom: var(--space-md); }
   .about-photo-wrapper {
-    margin: 0 -var(--space-md) var(--space-3xl);
+    margin: 0 calc(var(--space-md) * -1) var(--space-3xl);
   }
   .about-photo {
     border-radius: 0;
