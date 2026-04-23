@@ -268,7 +268,11 @@ h1, h2, h3, h4 {
   background: none;
   border: none;
   cursor: pointer;
-  padding: var(--space-sm);
+  padding: 12px;
+  min-width: 48px;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-mobile-toggle span {
@@ -1559,11 +1563,23 @@ h1, h2, h3, h4 {
 
 .consent-check input[type="checkbox"] {
   margin-top: 3px;
-  width: 17px;
-  height: 17px;
+  width: 20px;
+  height: 20px;
   accent-color: var(--maroon);
   cursor: pointer;
   flex-shrink: 0;
+}
+
+/* Bigger tap area around the checkbox on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .consent-check {
+    padding: 10px 0;
+  }
+  .consent-check input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+  }
 }
 
 .consent-check a {
@@ -2109,12 +2125,41 @@ h1, h2, h3, h4 {
   .footer-links {
     gap: var(--space-md);
   }
-  
+
   .footer-links a {
     font-size: 0.8rem;
   }
-  
+
   .footer-copy {
     font-size: 0.72rem;
+  }
+
+  .footer-legal {
+    gap: var(--space-sm) var(--space-md);
+    padding-top: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
+  .footer-legal a {
+    font-size: 0.75rem;
+  }
+
+  /* Consent checkbox on very small screens */
+  .consent-check {
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  /* Slot picker – comfortable scrolling on tiny screens */
+  .slot-picker {
+    gap: 6px;
+    padding-bottom: 6px;
+  }
+  .slot-picker::-webkit-scrollbar {
+    height: 6px;
+  }
+  .slot-picker::-webkit-scrollbar-thumb {
+    background: rgba(36, 21, 113, 0.25);
+    border-radius: 3px;
   }
 }
