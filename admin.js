@@ -535,6 +535,28 @@ function czToLocal(czTime) {
   return `${String(localH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
+// 24h booking lead time (matches frontend script.js)
+const BOOKING_LEAD_HOURS = 24;
+function czCutoff(leadHours) {
+  const future = new Date(Date.now() + leadHours * 3600 * 1000);
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Prague',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).formatToParts(future);
+  const g = t => parts.find(p => p.type === t).value;
+  return {
+    dateStr: `${g('year')}-${g('month')}-${g('day')}`,
+    timeStr: `${g('hour')}:${g('minute')}`
+  };
+}
+function isSlotBookable(dateStr, time) {
+  const c = czCutoff(BOOKING_LEAD_HOURS);
+  if (dateStr > c.dateStr) return true;
+  if (dateStr < c.dateStr) return false;
+  return time >= c.timeStr;
+}
+
 function renderTimeSlots() {
   const container = document.getElementById('timeSlotsContainer');
   if (!container) return;
@@ -559,7 +581,15 @@ function renderTimeSlots() {
     row.innerHTML = `
       <div class="time-slot-day">${formatSlotDate(dateStr)}</div>
       <div class="time-slot-times">
-        ${times.map(t => `<span class="time-chip" onclick="removeTimeSlot('${dateStr}', '${t}')" title="Smazat – ČR ${t} / u tebe ${czToLocal(t)}">${t} <small class="tc-local">(${czToLocal(t)})</small> <small>×</small></span>`).join('')}
+        ${times.map(t => {
+          const bookable = isSlotBookable(dateStr, t);
+          const tip = bookable
+            ? `Smazat – ČR ${t} / u tebe ${czToLocal(t)}`
+            : `Skrytý pro klienty (méně než 24h předem) – ČR ${t} / u tebe ${czToLocal(t)}`;
+          const cls = bookable ? 'time-chip' : 'time-chip time-chip-hidden';
+          const badge = bookable ? '' : ' <small class="tc-hidden-badge">skrytý</small>';
+          return `<span class="${cls}" onclick="removeTimeSlot('${dateStr}', '${t}')" title="${tip}">${t} <small class="tc-local">(${czToLocal(t)})</small>${badge} <small>×</small></span>`;
+        }).join('')}
       </div>
     `;
     container.appendChild(row);

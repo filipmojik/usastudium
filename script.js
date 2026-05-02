@@ -83,13 +83,38 @@ document.addEventListener('DOMContentLoaded', () => {
   const monthNamesEN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const dayNamesCZShort = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
 
+  // ===== 24h booking lead time =====
+  // Slot times are stored in Czech time. Customer must be able to book at
+  // least 24h in advance (CZ wall clock). Works regardless of viewer timezone.
+  const BOOKING_LEAD_HOURS = 24;
+
+  function czCutoff(leadHours) {
+    const future = new Date(Date.now() + leadHours * 3600 * 1000);
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Prague',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    }).formatToParts(future);
+    const g = t => parts.find(p => p.type === t).value;
+    return {
+      dateStr: `${g('year')}-${g('month')}-${g('day')}`,
+      timeStr: `${g('hour')}:${g('minute')}`
+    };
+  }
+
+  function isSlotBookable(dateStr, time) {
+    const c = czCutoff(BOOKING_LEAD_HOURS);
+    if (dateStr > c.dateStr) return true;
+    if (dateStr < c.dateStr) return false;
+    return time >= c.timeStr;
+  }
+
   function renderDatePicker(lang) {
     if (!datePicker) return;
     datePicker.innerHTML = '';
 
-    const todayStr = new Date().toISOString().split('T')[0];
     const sortedDates = Object.keys(availableSlotsFront)
-      .filter(d => d >= todayStr && availableSlotsFront[d].length > 0)
+      .filter(d => availableSlotsFront[d].some(t => isSlotBookable(d, t)))
       .sort();
 
     if (sortedDates.length === 0) {
@@ -148,10 +173,19 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const bookableTimes = [...availableSlotsFront[selectedDate]]
+      .filter(t => isSlotBookable(selectedDate, t))
+      .sort();
+
+    if (bookableTimes.length === 0) {
+      timePickerGroup.style.display = 'none';
+      return;
+    }
+
     timePickerGroup.style.display = '';
     timePicker.innerHTML = '';
 
-    [...availableSlotsFront[selectedDate]].sort().forEach(time => {
+    bookableTimes.forEach(time => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'slot-time-chip';
